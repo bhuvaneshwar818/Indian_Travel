@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { apiClient } from '../store/authStore'
-import { Compass, User, Mail, Lock, Eye, EyeOff, ShieldCheck, AlertCircle, KeySquare, Check, ArrowLeft, Clock, Calendar, RefreshCw } from 'lucide-react'
+import { apiClient, useAuthStore } from '../store/authStore'
+import { Compass, User, Mail, Lock, Eye, EyeOff, ShieldCheck, AlertCircle, KeySquare, Check, ArrowLeft, Clock, Calendar, RefreshCw, Chrome } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export default function Signup() {
   const navigate = useNavigate()
+  const { signInWithGoogle } = useAuthStore()
 
   // Form Step
   const [step, setStep] = useState(1) // 1: Personal Info, 2: Account Setup
@@ -575,6 +576,33 @@ export default function Signup() {
                           <span>Next: Account Setup</span>
                           <ArrowLeft className="w-4 h-4 rotate-180" />
                         </motion.button>
+                      )}
+
+                      {/* Or Divider */}
+                      {!isEmailVerified && (
+                        <div className="relative flex py-3 items-center">
+                          <div className="flex-grow border-t border-slate-200/60 dark:border-slate-800/40"></div>
+                          <span className="flex-shrink mx-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Or</span>
+                          <div className="flex-grow border-t border-slate-200/60 dark:border-slate-800/40"></div>
+                        </div>
+                      )}
+
+                      {/* Google Sign-up Button */}
+                      {!isEmailVerified && (
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            try {
+                              await signInWithGoogle();
+                            } catch (err) {
+                              console.error("Google SSO error:", err);
+                            }
+                          }}
+                          className="w-full py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-bold text-slate-700 flex items-center justify-center gap-2 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300 dark:hover:bg-slate-900 transition-all"
+                        >
+                          <Chrome className="w-4 h-4 text-primary" />
+                          <span>Sign up with Google</span>
+                        </button>
                       )}
 
                     </div>
