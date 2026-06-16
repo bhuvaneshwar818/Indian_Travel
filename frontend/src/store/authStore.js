@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import axios from 'axios'
+import { supabase } from '../lib/supabaseClient'
 
 export const API_BASE = 'http://localhost:8082/api';
 
@@ -130,7 +131,20 @@ export const useAuthStore = create((set, get) => ({
   },
 
   signInWithGoogle: async () => {
-    alert("Google Sign-In is currently disabled. Please use your standard username and password.");
+    set({ loading: true, error: null });
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        }
+      });
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      set({ error: err.message, loading: false });
+      throw err;
+    }
   }
 }));
 

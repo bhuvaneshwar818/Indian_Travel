@@ -18,6 +18,9 @@ public class SecurityConfig {
     @Autowired
     private JwtAuthenticationFilter jwtAuthenticationFilter;
 
+    @Autowired
+    private SupabaseJwtFilter supabaseJwtFilter;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -26,13 +29,14 @@ public class SecurityConfig {
             .headers(headers -> headers.frameOptions(frame -> frame.disable())) // Permit H2 console frame usage
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/logout").permitAll()
+                .requestMatchers("/api/auth/session", "/api/auth/logout").permitAll()
                 .requestMatchers("/api/auth/**", "/api/destinations/**", "/api/reviews/**", "/api/contact/**", "/h2-console/**", "/ws/**", "/ws").permitAll()
                 .requestMatchers("/api/wishlist/**", "/api/route/**", "/api/weather/**", "/api/transport/**", "/api/translate/**", "/api/expenses/**", "/api/trip/**", "/api/chat/**").authenticated()
                 .anyRequest().authenticated()
             );
 
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(supabaseJwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

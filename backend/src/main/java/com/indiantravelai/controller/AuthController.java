@@ -2,6 +2,7 @@ package com.indiantravelai.controller;
 
 import com.indiantravelai.dto.*;
 import com.indiantravelai.service.AuthService;
+import com.indiantravelai.service.SupabaseJwtService;
 import jakarta.validation.Valid;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -113,7 +114,34 @@ public class AuthController {
         }
     }
 
+    @Autowired
+    private SupabaseJwtService supabaseJwtService;
 
+    // Called by frontend after Supabase login to set HttpOnly cookie
+    @PostMapping("/session")
+    public ResponseEntity<?> setSession(
+            @Valid @RequestBody SessionRequestDto dto,
+            HttpServletResponse response) {
+
+        if (!supabaseJwtService.isTokenValid(dto.getAccessToken())) {
+            return ResponseEntity.status(401).body("Invalid token");
+        }
+
+        org.springframework.http.ResponseCookie responseCookie = org.springframework.http.ResponseCookie.from("auth_token", dto.getAccessToken())
+                .httpOnly(true)
+                .secure(false) // false for local http development
+                .path("/")
+                .maxAge(60 * 60 * 24) // 24 hours
+                .sameSite("Strict")
+                .build();
+        response.addHeader(org.springframework.http.HttpHeaders.SET_COOKIE, responseCookie.toString());
+
+        return ResponseEntity.ok(Map.of(
+            "message", "Session set",
+            "userId", supabaseJwtService.extractUserId(dto.getAccessToken()),
+            "email", supabaseJwtService.extractEmail(dto.getAccessToken())
+        ));
+    }
 
     // Clear HttpOnly cookie on logout
     @PostMapping("/logout")
