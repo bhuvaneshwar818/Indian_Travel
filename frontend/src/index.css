@@ -1,0 +1,168 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply font-sans;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display font-semibold;
+  }
+}
+
+/* --- Claymorphism Design System --- */
+.clay-card {
+  background: rgba(255, 255, 255, 0.75);
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 
+    6px 6px 16px rgba(124, 58, 237, 0.08),
+    inset -4px -4px 8px rgba(0, 0, 0, 0.06),
+    inset 4px 4px 8px rgba(255, 255, 255, 0.9);
+  border-radius: 1.5rem;
+  backdrop-filter: blur(12px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dark .clay-card {
+  background: rgba(20, 16, 32, 0.65);
+  border: 2px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 
+    8px 8px 24px rgba(0, 0, 0, 0.45),
+    inset -4px -4px 8px rgba(0, 0, 0, 0.35),
+    inset 4px 4px 8px rgba(255, 255, 255, 0.05);
+  border-radius: 1.5rem;
+  backdrop-filter: blur(16px);
+}
+
+/* Claymorphic Buttons */
+.clay-btn-primary {
+  background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 
+    0px 4px 10px rgba(124, 58, 237, 0.3),
+    inset -3px -3px 6px rgba(0, 0, 0, 0.2),
+    inset 3px 3px 6px rgba(255, 255, 255, 0.35);
+  border-radius: 0.85rem;
+  color: white;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.clay-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0px 6px 14px rgba(124, 58, 237, 0.45),
+    inset -2px -2px 4px rgba(0, 0, 0, 0.2),
+    inset 2px 2px 4px rgba(255, 255, 255, 0.4);
+}
+
+.clay-btn-primary:active {
+  transform: translateY(1px);
+  box-shadow: 
+    0px 2px 4px rgba(124, 58, 237, 0.25),
+    inset -4px -4px 8px rgba(0, 0, 0, 0.2),
+    inset 4px 4px 8px rgba(255, 255, 255, 0.35);
+}
+
+/* Secondary Clay Button */
+.clay-btn-secondary {
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 
+    0px 4px 8px rgba(0, 0, 0, 0.05),
+    inset -2px -2px 4px rgba(0, 0, 0, 0.06),
+    inset 2px 2px 4px rgba(255, 255, 255, 0.9);
+  border-radius: 0.85rem;
+  color: #4C1D95;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.dark .clay-btn-secondary {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 
+    0px 4px 8px rgba(0, 0, 0, 0.3),
+    inset -2px -2px 4px rgba(0, 0, 0, 0.4),
+    inset 2px 2px 4px rgba(255, 255, 255, 0.05);
+  color: #DDD6FE;
+}
+
+.clay-btn-secondary:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.dark .clay-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* --- Glassmorphism --- */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.dark .glass-panel {
+  background: rgba(10, 5, 22, 0.4);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.glass-navbar {
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+.dark .glass-navbar {
+  background: rgba(6, 2, 14, 0.7);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+/* Floating Animations */
+.animate-float-slow {
+  animation: float 8s ease-in-out infinite;
+}
+
+.animate-float-fast {
+  animation: float 4s ease-in-out infinite;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(124, 58, 237, 0.3);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(124, 58, 237, 0.55);
+}
+
+/* Glowing Neon Circles */
+.neon-glow-circle {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(120px);
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.4;
+}
+
+.dark .neon-glow-circle {
+  opacity: 0.25;
+}
+
