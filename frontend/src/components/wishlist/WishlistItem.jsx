@@ -1,6 +1,7 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Trash2 } from 'lucide-react'
 import DragHandle from './DragHandle'
+import { useTripStore } from '../../store/useTripStore'
 
 export default function WishlistItem({ 
   item, 
@@ -12,6 +13,23 @@ export default function WishlistItem({
   onDragEnd, 
   onDrop 
 }) {
+  const { weatherData, fetchWeather } = useTripStore();
+  const cityKey = (item.placeName || "").toLowerCase();
+  const info = weatherData[cityKey];
+
+  useEffect(() => {
+    if (item.placeName && !info) {
+      fetchWeather(item.placeName, item.lat, item.lng);
+    }
+  }, [item.placeName, item.lat, item.lng, info, fetchWeather]);
+
+  const getWeatherIcon = (temp, desc = "") => {
+    const d = desc.toLowerCase();
+    if (d.includes("rain") || d.includes("drizzle") || d.includes("shower")) return "🌧️";
+    if (d.includes("cloud") || d.includes("overcast") || d.includes("mist") || d.includes("fog")) return "☁️";
+    if (temp > 25) return "☀️";
+    return "🌤️";
+  };
   return (
     <div
       draggable="true"
@@ -47,6 +65,17 @@ export default function WishlistItem({
           {item.state} • {item.category}
         </p>
       </div>
+
+      {/* Small Weather Badge */}
+      {info && (
+        <div 
+          className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-white/[0.04] border border-white/5 text-[9px] font-black text-sky-400 select-none cursor-help hover:bg-white/[0.08] transition-colors flex-shrink-0"
+          title={`${info.description} • Click the Weather tab for full details`}
+        >
+          <span>{getWeatherIcon(info.temp, info.description)}</span>
+          <span>{Math.round(info.temp)}°C</span>
+        </div>
+      )}
 
       {/* Remove trigger */}
       <button

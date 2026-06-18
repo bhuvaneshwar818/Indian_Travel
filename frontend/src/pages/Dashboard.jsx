@@ -43,6 +43,7 @@ export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [rightPanelOpen, setRightPanelOpen] = useState(true);
   const [activeRoutePolyline, setActiveRoutePolyline] = useState(null);
+  const [weatherSelectedCity, setWeatherSelectedCity] = useState(null);
 
   // Map Filter states
   const [selectedState, setSelectedState] = useState('Goa');
@@ -370,23 +371,22 @@ export default function Dashboard() {
           {activeSection === 'dashboard' && (
             <div className="space-y-8">
               {/* Full-width Map Container */}
-              <div className="w-full">
+              <div class="w-full">
                 <GoogleMapPanel 
                   wishlist={wishlist} 
                   activeRoute={activeRoutePolyline} 
                   onAddWishlist={handleAddWishlist}
                   onUpdatePlaceName={updatePlaceName}
+                  onShowWeather={(city) => {
+                    setWeatherSelectedCity(city);
+                    setActiveSection('weather');
+                  }}
                 />
               </div>
 
-              {/* Weather & Translator side-by-side underneath */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                <div className="lg:col-span-6 space-y-6">
-                  <WeatherWidget destinations={wishlist} />
-                </div>
-                <div className="lg:col-span-6 space-y-6">
-                  <LanguageTranslator />
-                </div>
+              {/* Translator panel underneath */}
+              <div className="w-full">
+                <LanguageTranslator />
               </div>
 
               {preferences?.transportMode === 'PUBLIC' && (
@@ -497,12 +497,24 @@ export default function Dashboard() {
                             </p>
                           </div>
 
-                          <button
-                            onClick={() => handleAddWishlist(dest)}
-                            className="w-full py-2 rounded-xl bg-violet-600/10 hover:bg-violet-600/20 border border-violet-500/20 text-[10px] font-bold text-violet-300 mt-4 transition-all"
-                          >
-                            + Add to Wishlist
-                          </button>
+                          <div className="flex gap-2 mt-4">
+                            <button
+                              onClick={() => handleAddWishlist(dest)}
+                              className="flex-grow py-2 rounded-xl bg-violet-600/10 hover:bg-violet-600/20 border border-violet-500/20 text-[10px] font-bold text-violet-300 transition-all"
+                            >
+                              + Wishlist
+                            </button>
+                            <button
+                              onClick={() => {
+                                setWeatherSelectedCity(dest.city || dest.name);
+                                setActiveSection('weather');
+                              }}
+                              className="px-3 py-2 rounded-xl bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/20 text-[10px] font-bold text-sky-300 transition-all"
+                              title="View Weather Forecast"
+                            >
+                              🌤️ Forecast
+                            </button>
+                          </div>
                         </div>
                       </GlassCard>
                     ))
@@ -583,7 +595,7 @@ export default function Dashboard() {
 
           {activeSection === 'weather' && (
             <div className="max-w-4xl mx-auto">
-              <WeatherWidget destinations={wishlist} />
+              <WeatherWidget destinations={wishlist} initialSelectedCity={weatherSelectedCity} />
             </div>
           )}
 

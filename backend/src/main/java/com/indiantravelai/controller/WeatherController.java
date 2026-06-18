@@ -15,8 +15,12 @@ public class WeatherController {
     private WeatherService weatherService;
 
     @GetMapping
-    public ResponseEntity<WeatherDto> getWeather(@RequestParam(required = false, defaultValue = "Goa") String city, Principal principal) {
+    public ResponseEntity<WeatherDto> getWeather(
+            @RequestParam(required = false) String city,
+            @RequestParam(required = false) Double lat,
+            @RequestParam(required = false) Double lng,
+            Principal principal) {
         if (principal == null) return ResponseEntity.status(401).build();
-        return ResponseEntity.ok(weatherService.getWeather(city));
+        return ResponseEntity.ok(weatherService.getWeather(city, lat, lng));
     }
 }

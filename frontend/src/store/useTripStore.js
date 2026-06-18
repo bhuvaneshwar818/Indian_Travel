@@ -70,9 +70,13 @@ export const useTripStore = create((set, get) => ({
 
   clearRouteData: () => set({ routeData: null }),
 
-  fetchWeather: async (city) => {
+  fetchWeather: async (city, lat, lng) => {
     try {
-      const response = await apiClient.get(`/weather?city=${city}`);
+      let url = `/weather?city=${encodeURIComponent(city)}`;
+      if (lat !== undefined && lat !== null && lng !== undefined && lng !== null) {
+        url += `&lat=${lat}&lng=${lng}`;
+      }
+      const response = await apiClient.get(url);
       set((state) => ({
         weatherData: {
           ...state.weatherData,

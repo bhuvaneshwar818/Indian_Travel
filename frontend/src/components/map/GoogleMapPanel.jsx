@@ -137,7 +137,7 @@ function getStopColor(role, index) {
   return middleColors[index % middleColors.length];
 }
 
-export default function GoogleMapPanel({ wishlist = [], activeRoute = null, onAddWishlist, onUpdatePlaceName }) {
+export default function GoogleMapPanel({ wishlist = [], activeRoute = null, onAddWishlist, onUpdatePlaceName, onShowWeather }) {
   const mapRef = useRef(null);
   
   // API Key state: automatically resolves from env or localStorage
@@ -354,6 +354,9 @@ export default function GoogleMapPanel({ wishlist = [], activeRoute = null, onAd
               <button id="gmap-btn-add-click" class="w-full px-2 py-1.5 bg-violet-600 hover:bg-violet-700 text-white font-extrabold text-[10px] rounded-lg cursor-pointer transition-all shadow-sm">
                 + Add to Wishlist
               </button>
+              <button id="gmap-btn-weather-click" class="w-full px-2 py-1.5 mt-1 bg-sky-500 hover:bg-sky-600 text-white font-extrabold text-[10px] rounded-lg cursor-pointer transition-all shadow-sm">
+                🌤️ View Weather
+              </button>
             `;
 
             // Update content directly (InfoWindow is already open)
@@ -362,6 +365,7 @@ export default function GoogleMapPanel({ wishlist = [], activeRoute = null, onAd
             setTimeout(() => {
               const btn = document.getElementById('gmap-btn-add-click');
               const input = document.getElementById('gmap-input-place-name');
+              const weatherBtn = document.getElementById('gmap-btn-weather-click');
               if (input) {
                 input.focus();
               }
@@ -386,6 +390,13 @@ export default function GoogleMapPanel({ wishlist = [], activeRoute = null, onAd
                   } catch (err) {
                     console.error("Failed to add stop to wishlist", err);
                   }
+                };
+              }
+              if (weatherBtn && onShowWeather) {
+                weatherBtn.onclick = () => {
+                  const finalPlaceName = input ? input.value.trim() : "";
+                  onShowWeather(finalPlaceName || placeName);
+                  if (infoWindowRef.current) infoWindowRef.current.close();
                 };
               }
             }, 200);
@@ -621,6 +632,9 @@ export default function GoogleMapPanel({ wishlist = [], activeRoute = null, onAd
           <button id="gmap-btn-add-search" class="w-full px-2 py-1.5 bg-violet-600 hover:bg-violet-700 text-white font-extrabold text-[10px] rounded-lg cursor-pointer transition-all shadow-sm">
             + Add to Wishlist
           </button>
+          <button id="gmap-btn-weather-search" class="w-full px-2 py-1.5 mt-1 bg-sky-500 hover:bg-sky-600 text-white font-extrabold text-[10px] rounded-lg cursor-pointer transition-all shadow-sm">
+            🌤️ View Weather
+          </button>
         `;
 
         if (infoWindowRef.current) infoWindowRef.current.close();
@@ -630,6 +644,7 @@ export default function GoogleMapPanel({ wishlist = [], activeRoute = null, onAd
         setTimeout(() => {
           const btn = document.getElementById('gmap-btn-add-search');
           const input = document.getElementById('gmap-input-search-name');
+          const weatherBtn = document.getElementById('gmap-btn-weather-search');
           if (btn && onAddWishlist) {
             btn.onclick = async () => {
               const finalPlaceName = input ? input.value.trim() : placeName;
@@ -651,6 +666,13 @@ export default function GoogleMapPanel({ wishlist = [], activeRoute = null, onAd
               } catch (err) {
                 console.error("Failed to add search result to wishlist", err);
               }
+            };
+          }
+          if (weatherBtn && onShowWeather) {
+            weatherBtn.onclick = () => {
+              const finalPlaceName = input ? input.value.trim() : placeName;
+              onShowWeather(finalPlaceName);
+              if (infoWindowRef.current) infoWindowRef.current.close();
             };
           }
         }, 150);
@@ -1096,13 +1118,23 @@ export default function GoogleMapPanel({ wishlist = [], activeRoute = null, onAd
           stateDetail.innerText = `Region: ${place.state} • ${place.category}`;
           infoDiv.appendChild(stateDetail);
 
-          const btnContainer = document.createElement('div');
+           const btnContainer = document.createElement('div');
           btnContainer.className = 'flex justify-end gap-1.5 mt-1 pt-1.5 border-t border-violet-100';
 
           const cancelBtn = document.createElement('button');
           cancelBtn.innerText = 'Close';
           cancelBtn.className = 'px-2.5 py-1 rounded bg-violet-100 hover:bg-violet-200 text-violet-750 text-[10px] font-bold cursor-pointer transition-colors';
           cancelBtn.onclick = () => {
+            if (infoWindowRef.current) infoWindowRef.current.close();
+          };
+
+          const weatherBtn = document.createElement('button');
+          weatherBtn.innerText = '🌤️ Weather';
+          weatherBtn.className = 'px-2.5 py-1 rounded bg-sky-500 hover:bg-sky-600 text-white text-[10px] font-bold cursor-pointer transition-colors';
+          weatherBtn.onclick = () => {
+            if (onShowWeather) {
+              onShowWeather(place.placeName || place.name);
+            }
             if (infoWindowRef.current) infoWindowRef.current.close();
           };
 
@@ -1138,6 +1170,7 @@ export default function GoogleMapPanel({ wishlist = [], activeRoute = null, onAd
           });
 
           btnContainer.appendChild(cancelBtn);
+          btnContainer.appendChild(weatherBtn);
           btnContainer.appendChild(saveBtn);
           infoDiv.appendChild(btnContainer);
 
@@ -1201,7 +1234,7 @@ export default function GoogleMapPanel({ wishlist = [], activeRoute = null, onAd
         
         const polyBounds = new window.google.maps.LatLngBounds();
         pathCoords.forEach(coord => polyBounds.extend(coord));
-        map.fitBounds(polyBounds);
+        map.fitBounds(polyBounds, 80);
 
         // Calculate distance and duration if not already set by backend
         if (!activeRoute.totalDistance || !activeRoute.totalDuration) {
@@ -1247,7 +1280,7 @@ export default function GoogleMapPanel({ wishlist = [], activeRoute = null, onAd
 
               const polyBounds = new window.google.maps.LatLngBounds();
               roadCoords.forEach(coord => polyBounds.extend(coord));
-              map.fitBounds(polyBounds);
+              map.fitBounds(polyBounds, 80);
 
               const osrmDistance = data.routes[0].distance;
               const osrmDuration = data.routes[0].duration;
@@ -1288,7 +1321,7 @@ export default function GoogleMapPanel({ wishlist = [], activeRoute = null, onAd
 
                 const polyBounds = new window.google.maps.LatLngBounds();
                 googleCoords.forEach(coord => polyBounds.extend(coord));
-                map.fitBounds(polyBounds);
+                map.fitBounds(polyBounds, 80);
 
                 let totalDistMeters = 0;
                 let totalDurSeconds = 0;
@@ -1318,7 +1351,7 @@ export default function GoogleMapPanel({ wishlist = [], activeRoute = null, onAd
           map.setCenter(bounds.getCenter());
           map.setZoom(12);
         } else {
-          map.fitBounds(bounds);
+          map.fitBounds(bounds, 80);
         }
       }
     }
@@ -1392,6 +1425,9 @@ export default function GoogleMapPanel({ wishlist = [], activeRoute = null, onAd
         <button id="gmap-btn-add-search" class="w-full px-2 py-1.5 bg-violet-600 hover:bg-violet-700 text-white font-extrabold text-[10px] rounded-lg cursor-pointer transition-all shadow-sm">
           + Add to Wishlist
         </button>
+        <button id="gmap-btn-weather-search" class="w-full px-2 py-1.5 mt-1 bg-sky-500 hover:bg-sky-600 text-white font-extrabold text-[10px] rounded-lg cursor-pointer transition-all shadow-sm">
+          🌤️ View Weather
+        </button>
       `;
 
       if (infoWindowRef.current) infoWindowRef.current.close();
@@ -1401,6 +1437,7 @@ export default function GoogleMapPanel({ wishlist = [], activeRoute = null, onAd
       setTimeout(() => {
         const btn = document.getElementById('gmap-btn-add-search');
         const input = document.getElementById('gmap-input-search-name');
+        const weatherBtn = document.getElementById('gmap-btn-weather-search');
         if (btn && onAddWishlist) {
           btn.onclick = async () => {
             const finalPlaceName = input ? input.value.trim() : placeName;
@@ -1422,6 +1459,13 @@ export default function GoogleMapPanel({ wishlist = [], activeRoute = null, onAd
             } catch (err) {
               console.error("Failed to add search result to wishlist", err);
             }
+          };
+        }
+        if (weatherBtn && onShowWeather) {
+          weatherBtn.onclick = () => {
+            const finalPlaceName = input ? input.value.trim() : placeName;
+            onShowWeather(finalPlaceName);
+            if (infoWindowRef.current) infoWindowRef.current.close();
           };
         }
       }, 150);
@@ -1537,6 +1581,9 @@ export default function GoogleMapPanel({ wishlist = [], activeRoute = null, onAd
               <button id="gmap-btn-locate-add" class="w-full px-2 py-1.5 bg-violet-600 hover:bg-violet-700 text-white font-extrabold text-[10px] rounded-lg cursor-pointer transition-all shadow-sm">
                 + Add to Wishlist
               </button>
+              <button id="gmap-btn-weather-locate" class="w-full px-2 py-1.5 mt-1 bg-sky-500 hover:bg-sky-600 text-white font-extrabold text-[10px] rounded-lg cursor-pointer transition-all shadow-sm">
+                🌤️ View Weather
+              </button>
             `;
 
             if (infoWindowRef.current) infoWindowRef.current.close();
@@ -1546,6 +1593,7 @@ export default function GoogleMapPanel({ wishlist = [], activeRoute = null, onAd
             setTimeout(() => {
               const btn = document.getElementById('gmap-btn-locate-add');
               const input = document.getElementById('gmap-input-locate-name');
+              const weatherBtn = document.getElementById('gmap-btn-weather-locate');
               if (btn && onAddWishlist) {
                 btn.onclick = async () => {
                   const finalPlaceName = input ? input.value.trim() : placeName;
@@ -1565,6 +1613,13 @@ export default function GoogleMapPanel({ wishlist = [], activeRoute = null, onAd
                   } catch (err) {
                     console.error(err);
                   }
+                };
+              }
+              if (weatherBtn && onShowWeather) {
+                weatherBtn.onclick = () => {
+                  const finalPlaceName = input ? input.value.trim() : placeName;
+                  onShowWeather(finalPlaceName);
+                  if (infoWindowRef.current) infoWindowRef.current.close();
                 };
               }
             }, 150);
