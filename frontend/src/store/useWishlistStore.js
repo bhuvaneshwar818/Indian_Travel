@@ -61,5 +61,20 @@ export const useWishlistStore = create((set, get) => ({
       // Re-fetch to sync
       get().fetchWishlist();
     }
+  },
+
+  updatePlaceName: async (id, newName) => {
+    set({ loading: true, error: null });
+    try {
+      const response = await apiClient.put(`/wishlist/${id}`, { placeName: newName });
+      set((stateObj) => ({
+        wishlist: stateObj.wishlist.map((item) => item.id === id ? response.data : item),
+        loading: false
+      }));
+      return response.data;
+    } catch (err) {
+      set({ error: err.response?.data?.error || 'Failed to update place name.', loading: false });
+      throw err;
+    }
   }
 }));

@@ -722,6 +722,7 @@ export default function SearchDropdowns() {
 
             {/* Map wrapper — restored to original aspect-square */}
             <div
+              onMouseMove={handleMouseMove}
               className="clay-card p-4 md:p-6 bg-white/70 dark:bg-slate-900/60 border border-slate-200/50 dark:border-slate-800/40 shadow-inner flex items-center justify-center w-full relative aspect-square rounded-2xl"
             >
               

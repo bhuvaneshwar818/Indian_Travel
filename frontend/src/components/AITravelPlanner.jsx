@@ -33,6 +33,18 @@ export default function AITravelPlanner() {
   // Timeline UI State
   const [activeDay, setActiveDay] = useState(1)
 
+  // Listen to external map click events to automatically select a state in the AI Travel Wizard
+  React.useEffect(() => {
+    const handleSetPlannerState = (e) => {
+      if (e.detail && e.detail.state) {
+        setSelectedState(e.detail.state);
+        setStep(1); // Show step 1 to confirm selection
+      }
+    };
+    window.addEventListener('set-planner-state', handleSetPlannerState);
+    return () => window.removeEventListener('set-planner-state', handleSetPlannerState);
+  }, []);
+
   const handleNextStep = () => {
     if (step < 4) setStep(step + 1)
   }

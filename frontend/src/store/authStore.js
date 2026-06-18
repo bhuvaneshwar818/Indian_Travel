@@ -150,10 +150,23 @@ export const useAuthStore = create((set, get) => ({
 
 // On load, restore session by checking backend profile
 const restoreSession = async () => {
+  const token = localStorage.getItem('token');
+  const isCallback = typeof window !== 'undefined' && window.location.pathname === '/auth/callback';
+
+  if (!token || isCallback) {
+    useAuthStore.setState({
+      user: null,
+      token: null,
+      isAuthenticated: false,
+      loading: false
+    });
+    return;
+  }
+
+  useAuthStore.setState({ loading: true });
   try {
     const response = await apiClient.get('/user/profile');
     const data = response.data;
-    const token = localStorage.getItem('token');
     useAuthStore.setState({
       user: data,
       token: token,

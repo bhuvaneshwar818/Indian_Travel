@@ -25,7 +25,7 @@ import '../styles/dashboard.css'
 
 export default function Dashboard() {
   const { user, logout } = useAuthStore();
-  const { wishlist, fetchWishlist, addPlaceToWishlist, removePlaceFromWishlist, reorderWishlist } = useWishlistStore();
+  const { wishlist, fetchWishlist, addPlaceToWishlist, removePlaceFromWishlist, reorderWishlist, updatePlaceName } = useWishlistStore();
   const { 
     preferences, fetchPreferences, routeData, fetchShortestRoute, 
     fetchScenicRoute, clearRouteData, weatherData, fetchWeather, 
@@ -74,27 +74,101 @@ export default function Dashboard() {
   };
 
   const handleAddWishlist = async (dest) => {
+    let lat = dest.lat;
+    let lng = dest.lng;
+
+    // If coordinates are missing (like for seeded database destinations), try to geocode them!
+    if (!lat || !lng) {
+      const query = `${dest.name || dest.placeName}, ${dest.city || ''}, ${dest.state}, India`;
+      try {
+        if (window.google && window.google.maps && window.google.maps.Geocoder) {
+          const geocoder = new window.google.maps.Geocoder();
+          const geocodePromise = new Promise((resolve) => {
+            geocoder.geocode({ address: query }, (results, status) => {
+              if (status === 'OK' && results[0]) {
+                const loc = results[0].geometry.location;
+                resolve({ lat: loc.lat(), lng: loc.lng() });
+              } else {
+                resolve(null);
+              }
+            });
+          });
+          const coords = await geocodePromise;
+          if (coords) {
+            lat = coords.lat;
+            lng = coords.lng;
+          }
+        }
+      } catch (err) {
+        console.warn("Google geocoding failed for catalog item:", err);
+      }
+
+      // If Google Geocoding failed or key restricted, try Nominatim fallback
+      if (!lat || !lng) {
+        try {
+          const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(query)}`);
+          const data = await res.json();
+          if (data && data[0]) {
+            lat = parseFloat(data[0].lat);
+            lng = parseFloat(data[0].lon);
+          }
+        } catch (err) {
+          console.warn("Nominatim fallback geocoding failed for catalog item:", err);
+        }
+      }
+    }
+
+    // Default fallback if all geocoding fails
+    if (!lat || !lng) {
+      lat = 20.5937;
+      lng = 78.9629;
+    }
+
     try {
       await addPlaceToWishlist(
         dest.name || dest.placeName,
         dest.state,
         dest.category,
-        dest.lat || 20.5937,
-        dest.lng || 78.9629
+        lat,
+        lng
       );
     } catch (e) {
       console.error("Failed to add to wishlist", e);
     }
   };
 
-  const handleDrawRoute = (polyline, isScenic) => {
+  const handleDrawRoute = (polyline, isScenic, distance, duration, stops, routingMode) => {
     setActiveRoutePolyline({
       polyline,
-      isScenic
+      isScenic,
+      totalDistance: distance || (routeData ? routeData.totalDistance : null),
+      totalDuration: duration || (routeData ? routeData.totalDuration : null),
+      stops: stops || (routeData ? routeData.stops : []),
+      routingMode: routingMode || 'order'
     });
     setActiveSection('dashboard'); // go back to main dashboard to see drawn path
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  const handleReorderWishlist = async (reorderedItems) => {
+    // Call store reorder
+    await reorderWishlist(reorderedItems);
+
+    // If there is an active route, update its stops list to match the new order so the map redraws it!
+    if (activeRoutePolyline) {
+      setActiveRoutePolyline(prev => {
+        if (!prev) return null;
+        const startsWithCurrent = prev.stops && prev.stops[0] === "Current Location";
+        const newStops = reorderedItems.map(p => p.placeName);
+        return {
+          ...prev,
+          polyline: "", // Clear static polyline to force dynamic OSRM/directions road path recalculation
+          stops: startsWithCurrent ? ["Current Location", ...newStops] : newStops
+        };
+      });
+    }
+  };
+
 
   const filteredPlaces = destinations.filter(p => 
     p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -241,24 +315,31 @@ export default function Dashboard() {
           {/* DYNAMIC SUBSECTION RENDERING */}
           {activeSection === 'dashboard' && (
             <div className="space-y-8">
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                {/* Left Column: Interactive Google Map */}
-                <div className="lg:col-span-8 space-y-6">
-                  <GoogleMapPanel 
-                    wishlist={wishlist} 
-                    activeRoute={activeRoutePolyline} 
-                  />
-                  {preferences?.transportMode === 'PUBLIC' && (
-                    <TransportTimings wishlist={wishlist} />
-                  )}
-                </div>
+              {/* Full-width Map Container */}
+              <div className="w-full">
+                <GoogleMapPanel 
+                  wishlist={wishlist} 
+                  activeRoute={activeRoutePolyline} 
+                  onAddWishlist={handleAddWishlist}
+                  onUpdatePlaceName={updatePlaceName}
+                />
+              </div>
 
-                {/* Right Column: Local weather widgets & Translator tools */}
-                <div className="lg:col-span-4 space-y-6">
+              {/* Weather & Translator side-by-side underneath */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <div className="lg:col-span-6 space-y-6">
                   <WeatherWidget destinations={wishlist} />
+                </div>
+                <div className="lg:col-span-6 space-y-6">
                   <LanguageTranslator />
                 </div>
               </div>
+
+              {preferences?.transportMode === 'PUBLIC' && (
+                <div className="w-full">
+                  <TransportTimings wishlist={wishlist} />
+                </div>
+              )}
             </div>
           )}
 
@@ -383,9 +464,12 @@ export default function Dashboard() {
               <WishlistPanel
                 wishlist={wishlist}
                 onRemove={removePlaceFromWishlist}
-                reorder={reorderWishlist}
+                reorder={handleReorderWishlist}
                 onFindShortestRoute={fetchShortestRoute}
                 onFindScenicRoute={fetchScenicRoute}
+                activeRoute={activeRoutePolyline}
+                onClearRoute={() => setActiveRoutePolyline(null)}
+                onDrawRoute={handleDrawRoute}
               />
             </div>
           )}
@@ -465,9 +549,12 @@ export default function Dashboard() {
             <WishlistPanel
               wishlist={wishlist}
               onRemove={removePlaceFromWishlist}
-              reorder={reorderWishlist}
+              reorder={handleReorderWishlist}
               onFindShortestRoute={fetchShortestRoute}
               onFindScenicRoute={fetchScenicRoute}
+              activeRoute={activeRoutePolyline}
+              onClearRoute={() => setActiveRoutePolyline(null)}
+              onDrawRoute={handleDrawRoute}
             />
           </div>
         </aside>

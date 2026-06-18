@@ -377,6 +377,8 @@ export default function InteractiveMap() {
     const plannerSection = document.getElementById('ai-planner')
     if (plannerSection) {
       plannerSection.scrollIntoView({ behavior: 'smooth' })
+      // Dispatch custom event to notify AITravelPlanner of state change
+      window.dispatchEvent(new CustomEvent('set-planner-state', { detail: { state: selectedState } }))
       // Auto populate state input if possible by dispatching window event or element focus
       setTimeout(() => {
         const stateSelect = document.getElementById('state-selector-input')

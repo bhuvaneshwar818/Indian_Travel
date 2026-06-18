@@ -5,6 +5,7 @@ import DragHandle from './DragHandle'
 export default function WishlistItem({ 
   item, 
   index, 
+  color = '#7c3aed',
   onRemove, 
   onDragStart, 
   onDragOver, 
@@ -27,6 +28,15 @@ export default function WishlistItem({
       <span className="w-5.5 h-5.5 rounded-lg bg-violet-650/30 text-violet-300 border border-violet-900/35 flex items-center justify-center text-[9px] font-black flex-shrink-0">
         #{index + 1}
       </span>
+
+      {/* Role circle dot color */}
+      <span 
+        className="w-2.5 h-2.5 rounded-full flex-shrink-0 border border-white/20 shadow-sm"
+        style={{
+          backgroundColor: color
+        }}
+        title={`Stop #${index + 1}`}
+      />
 
       {/* Content */}
       <div className="flex-1 text-left min-w-0">

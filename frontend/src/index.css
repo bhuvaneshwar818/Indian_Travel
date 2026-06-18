@@ -166,3 +166,48 @@
   opacity: 0.25;
 }
 
+/* --- Custom Google Maps InfoWindow (Tooltip) Styling --- */
+.gm-style-iw-c {
+  background-color: #f8f6ff !important; /* Light purple-tinted background */
+  border: 1.5px solid #ddd6fe !important; /* Soft violet border */
+  border-radius: 16px !important;
+  box-shadow: 0 10px 25px -5px rgba(124, 58, 237, 0.15), 0 8px 10px -6px rgba(124, 58, 237, 0.1) !important;
+  padding: 0 !important;
+}
+
+.gm-style-iw-d {
+  padding: 12px 14px !important;
+  overflow: hidden !important;
+}
+
+.gm-style-iw-tc::after {
+  background-color: #f8f6ff !important; /* Match the pointer triangle to the background */
+}
+
+/* Custom modern circle close button */
+.gm-ui-hover-effect {
+  background-color: rgba(124, 58, 237, 0.1) !important;
+  border-radius: 9999px !important;
+  top: 8px !important;
+  right: 8px !important;
+  width: 22px !important;
+  height: 22px !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.gm-ui-hover-effect:hover {
+  background-color: rgba(124, 58, 237, 0.25) !important;
+  transform: scale(1.05);
+}
+
+.gm-ui-hover-effect > span {
+  margin: 0 !important;
+  width: 12px !important;
+  height: 12px !important;
+}
+
+

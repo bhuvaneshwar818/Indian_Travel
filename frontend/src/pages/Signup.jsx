@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { apiClient, useAuthStore } from '../store/authStore'
 import { Compass, User, Mail, Lock, Eye, EyeOff, ShieldCheck, AlertCircle, KeySquare, Check, ArrowLeft, Clock, Calendar, RefreshCw, Chrome } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export default function Signup() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { signInWithGoogle } = useAuthStore()
 
   // Form Step
   const [step, setStep] = useState(1) // 1: Personal Info, 2: Account Setup
+  const [isGoogleSignup, setIsGoogleSignup] = useState(false)
+  const [googleAccessToken, setGoogleAccessToken] = useState('')
 
   // Form Fields - Step 1
   const [fullName, setFullName] = useState('')
@@ -74,6 +77,54 @@ export default function Signup() {
     }
     return () => clearInterval(interval)
   }, [expiryTimer, isOtpSent, isEmailVerified])
+
+  // Handle Google signup initial state on redirect callback
+  useEffect(() => {
+    if (location.state && location.state.isGoogleSignup) {
+      setIsGoogleSignup(true)
+      setEmail(location.state.email || '')
+      setFullName(location.state.fullName || '')
+      setGoogleAccessToken(location.state.accessToken || '')
+      setIsEmailVerified(true) // Google emails are pre-verified
+      setStep(2) // Jump straight to step 2 (username/password)
+      // Small timeout to let toasts mount if any
+      setTimeout(() => {
+        addToast('info', 'Please choose a username and password to complete your Google account setup.')
+      }, 300)
+    }
+  }, [location.state])
+
+  const handleGeneratePassword = () => {
+    const chars = {
+      upper: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+      lower: 'abcdefghijklmnopqrstuvwxyz',
+      number: '0123456789',
+      special: '!@#$%^&*()_+-=[]{}|;:,.<>?'
+    }
+    
+    let passwordArray = [
+      chars.upper[Math.floor(Math.random() * chars.upper.length)],
+      chars.lower[Math.floor(Math.random() * chars.lower.length)],
+      chars.number[Math.floor(Math.random() * chars.number.length)],
+      chars.special[Math.floor(Math.random() * chars.special.length)]
+    ]
+    
+    const allChars = chars.upper + chars.lower + chars.number + chars.special
+    for (let i = 4; i < 14; i++) {
+      passwordArray.push(allChars[Math.floor(Math.random() * allChars.length)])
+    }
+    
+    for (let i = passwordArray.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [passwordArray[i], passwordArray[j]] = [passwordArray[j], passwordArray[i]];
+    }
+    
+    const genPassword = passwordArray.join('')
+    setPassword(genPassword)
+    setConfirmPassword(genPassword)
+    setShowPassword(true)
+    addToast('success', 'Strong password generated! Make sure to save it.')
+  }
 
   // Debounced Username Availability Checking
   useEffect(() => {
@@ -177,16 +228,6 @@ export default function Signup() {
   // Register Form Submit
   const handleRegisterSubmit = async (e) => {
     e.preventDefault()
-    if (!fullName.trim() || !age.trim() || !gender.trim() || !email.trim()) {
-      addToast('warning', 'Please complete the first step details.')
-      setStep(1)
-      return
-    }
-    if (!isEmailVerified) {
-      addToast('warning', 'Please verify your email address to proceed.')
-      setStep(1)
-      return
-    }
     if (!username.trim() || !password.trim() || !confirmPassword.trim()) {
       addToast('warning', 'Please fill in all the details in Step 2.')
       return
@@ -201,6 +242,57 @@ export default function Signup() {
     }
     if (usernameAvailable === false) {
       addToast('error', 'Username is already taken!')
+      return
+    }
+
+    if (isGoogleSignup) {
+      setIsRegistering(true)
+      addToast('info', 'Completing Google registration...')
+      try {
+        const response = await apiClient.post('/auth/signup-google', {
+          accessToken: googleAccessToken,
+          username,
+          password
+        })
+        addToast('success', 'Google account setup completed successfully!')
+        
+        const data = response.data;
+        const localUser = {
+          username: data.username,
+          email: data.email,
+          fullName: data.fullName,
+          role: data.role || 'ROLE_USER'
+        };
+        localStorage.setItem('token', googleAccessToken);
+        localStorage.setItem('user', JSON.stringify(localUser));
+
+        useAuthStore.setState({
+          user: localUser,
+          token: googleAccessToken,
+          isAuthenticated: true,
+          loading: false
+        });
+
+        setTimeout(() => {
+          navigate('/dashboard')
+        }, 1500)
+      } catch (err) {
+        const errMsg = err.response?.data?.error || 'Registration failed.'
+        addToast('error', errMsg)
+      } finally {
+        setIsRegistering(false)
+      }
+      return
+    }
+
+    if (!fullName.trim() || !age.trim() || !gender.trim() || !email.trim()) {
+      addToast('warning', 'Please complete the first step details.')
+      setStep(1)
+      return
+    }
+    if (!isEmailVerified) {
+      addToast('warning', 'Please verify your email address to proceed.')
+      setStep(1)
       return
     }
 
@@ -671,6 +763,16 @@ export default function Signup() {
                             {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                           </button>
                         </div>
+                        <div className="flex justify-end mt-1">
+                          <button
+                            type="button"
+                            onClick={handleGeneratePassword}
+                            className="text-[10px] font-extrabold text-primary hover:underline flex items-center gap-1 cursor-pointer"
+                          >
+                            <KeySquare className="w-3 h-3" />
+                            <span>Generate Strong Password</span>
+                          </button>
+                        </div>
                       </div>
 
                       {/* Confirm Password */}
@@ -736,7 +838,13 @@ export default function Signup() {
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
                           type="button"
-                          onClick={() => setStep(1)}
+                          onClick={() => {
+                            if (isGoogleSignup) {
+                              navigate('/login')
+                            } else {
+                              setStep(1)
+                            }
+                          }}
                           className="w-1/3 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-bold text-slate-700 flex items-center justify-center gap-2 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300 dark:hover:bg-slate-900 transition-all"
                         >
                           <ArrowLeft className="w-4 h-4" />

@@ -58,4 +58,23 @@ public class WishlistController {
             return ResponseEntity.badRequest().body(err);
         }
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updatePlaceName(@PathVariable Long id, @RequestBody Map<String, String> body, Principal principal) {
+        if (principal == null) return ResponseEntity.status(401).build();
+        try {
+            String newName = body.get("placeName");
+            if (newName == null || newName.trim().isEmpty()) {
+                Map<String, String> err = new HashMap<>();
+                err.put("error", "Place name cannot be empty");
+                return ResponseEntity.badRequest().body(err);
+            }
+            WishlistDto updated = wishlistService.updatePlaceName(principal.getName(), id, newName.trim());
+            return ResponseEntity.ok(updated);
+        } catch (Exception e) {
+            Map<String, String> err = new HashMap<>();
+            err.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(err);
+        }
+    }
 }

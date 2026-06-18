@@ -22,25 +22,37 @@ const AuthCallback = () => {
           if (response.ok) {
             const data = await response.json();
             
-            // Store token and user details in localStorage
-            const localUser = {
-              username: data.email.split('@')[0],
-              email: data.email,
-              fullName: data.fullName || data.email.split('@')[0],
-              role: 'ROLE_USER'
-            };
-            localStorage.setItem('token', session.access_token);
-            localStorage.setItem('user', JSON.stringify(localUser));
+            if (data.isNewUser) {
+              // Redirect to Signup Step 2 (custom username/password setup)
+              navigate('/signup', {
+                state: {
+                  isGoogleSignup: true,
+                  email: data.email,
+                  fullName: data.fullName,
+                  accessToken: session.access_token
+                }
+              });
+            } else {
+              // Store token and user details in localStorage
+              const localUser = {
+                username: data.username,
+                email: data.email,
+                fullName: data.fullName,
+                role: data.role || 'ROLE_USER'
+              };
+              localStorage.setItem('token', session.access_token);
+              localStorage.setItem('user', JSON.stringify(localUser));
 
-            // Sync authStore state
-            useAuthStore.setState({
-              user: localUser,
-              token: session.access_token,
-              isAuthenticated: true,
-              loading: false
-            });
+              // Sync authStore state
+              useAuthStore.setState({
+                user: localUser,
+                token: session.access_token,
+                isAuthenticated: true,
+                loading: false
+              });
 
-            navigate('/dashboard');
+              navigate('/dashboard');
+            }
           } else {
             console.error("Backend session validation failed");
             navigate('/login');

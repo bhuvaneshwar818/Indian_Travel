@@ -82,6 +82,20 @@ public class WishlistService {
         }
     }
 
+    @Transactional
+    public WishlistDto updatePlaceName(String username, Long id, String newName) {
+        WishlistPlace place = wishlistRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Wishlist place not found with id: " + id));
+        
+        if (!place.getTrip().getUser().getUsername().equals(username)) {
+            throw new RuntimeException("Unauthorized operation on wishlist");
+        }
+        
+        place.setPlaceName(newName);
+        WishlistPlace saved = wishlistRepository.save(place);
+        return convertToDto(saved);
+    }
+
     private WishlistDto convertToDto(WishlistPlace place) {
         return new WishlistDto(
                 place.getId(),
