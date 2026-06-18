@@ -1680,7 +1680,7 @@ export default function GoogleMapPanel({ wishlist = [], activeRoute = null, onAd
       {/* Map Display / Key Input Workspace Wrapper */}
       <div 
         id="google-map-container"
-        className="w-full h-[calc(100vh-240px)] min-h-[550px] rounded-xl overflow-hidden border border-white/10 shadow-inner bg-slate-900/60 relative z-10 flex items-center justify-center"
+        className="w-full h-[350px] md:h-[calc(100vh-240px)] md:min-h-[550px] rounded-xl overflow-hidden border border-white/10 shadow-inner bg-slate-900/60 relative z-10 flex items-center justify-center"
       >
         {/* Map Canvas Div - Google Maps will replace contents of this div only */}
         {apiKey && (
@@ -1717,8 +1717,8 @@ export default function GoogleMapPanel({ wishlist = [], activeRoute = null, onAd
         {/* overlays (z-20) rendered on top of the Map Canvas */}
         {!apiKey ? (
           /* Glassmorphic Key Setup Form Overlay */
-          <div className="max-w-md w-full p-8 rounded-2xl bg-slate-950/70 border border-white/10 backdrop-blur-md text-center space-y-6 shadow-2xl animate-dashboard-fade relative z-30">
-            <div className="w-16 h-16 rounded-full bg-violet-600/10 border border-violet-500/25 flex items-center justify-center mx-auto text-violet-400">
+          <div className="max-w-md w-full p-6 sm:p-8 rounded-2xl bg-slate-950/70 border border-white/10 backdrop-blur-md text-center space-y-6 shadow-2xl animate-dashboard-fade relative z-30">
+            <div className="w-16 h-16 rounded-full bg-violet-650/10 border border-violet-500/25 flex items-center justify-center mx-auto text-violet-400">
               <Map className="w-8 h-8 animate-pulse" />
             </div>
             
@@ -1757,50 +1757,54 @@ export default function GoogleMapPanel({ wishlist = [], activeRoute = null, onAd
           <>
             {googleMapsLoaded && (
               <div 
-                className="absolute top-4 right-4 z-[1000] flex gap-1.5 bg-slate-950/85 border border-white/10 p-1.5 rounded-xl shadow-2xl backdrop-blur-md items-center"
+                className="absolute top-4 right-4 z-[1000] flex gap-1 bg-slate-950/85 border border-white/10 p-1.5 rounded-xl shadow-2xl backdrop-blur-md items-center"
                 style={{ zIndex: 1000 }}
               >
                 <button
                   type="button"
                   onClick={() => setActiveLayer('street')}
-                  className={`px-3 py-1.5 text-[9px] font-black uppercase rounded-lg transition-all cursor-pointer flex items-center gap-1 ${
+                  className={`px-2 py-1.5 text-[9px] font-black uppercase rounded-lg transition-all cursor-pointer flex items-center gap-1 ${
                     activeLayer === 'street' 
                       ? 'bg-violet-600 text-white shadow-md' 
                       : 'text-white/60 hover:text-white hover:bg-white/5'
                   }`}
                 >
-                  🗺️ Street
+                  <span>🗺️</span>
+                  <span className="hidden sm:inline">Street</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveLayer('satellite')}
-                  className={`px-3 py-1.5 text-[9px] font-black uppercase rounded-lg transition-all cursor-pointer flex items-center gap-1 ${
+                  className={`px-2 py-1.5 text-[9px] font-black uppercase rounded-lg transition-all cursor-pointer flex items-center gap-1 ${
                     activeLayer === 'satellite' 
                       ? 'bg-violet-600 text-white shadow-md' 
                       : 'text-white/60 hover:text-white hover:bg-white/5'
                   }`}
                 >
-                  🛰️ Satellite
+                  <span>🛰️</span>
+                  <span className="hidden sm:inline">Satellite</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveLayer('terrain')}
-                  className={`px-3 py-1.5 text-[9px] font-black uppercase rounded-lg transition-all cursor-pointer flex items-center gap-1 ${
+                  className={`px-2 py-1.5 text-[9px] font-black uppercase rounded-lg transition-all cursor-pointer flex items-center gap-1 ${
                     activeLayer === 'terrain' 
                       ? 'bg-violet-600 text-white shadow-md' 
                       : 'text-white/60 hover:text-white hover:bg-white/5'
                   }`}
                 >
-                  ⛰️ Terrain
+                  <span>⛰️</span>
+                  <span className="hidden sm:inline">Terrain</span>
                 </button>
                 <div className="w-px h-4 bg-white/10" />
                 <button
                   type="button"
                   onClick={handleClearKey}
                   title="Reset API Key"
-                  className="px-2.5 py-1.5 rounded-lg text-white/50 hover:text-white hover:bg-white/5 transition-all cursor-pointer text-[9px] font-black uppercase"
+                  className="px-2 py-1.5 rounded-lg text-white/50 hover:text-white hover:bg-white/5 transition-all cursor-pointer text-[9px] font-black uppercase flex items-center gap-1"
                 >
-                  ⚙️ Reset Key
+                  <span>⚙️</span>
+                  <span className="hidden sm:inline">Reset Key</span>
                 </button>
               </div>
             )}

@@ -40,7 +40,7 @@ export default function Dashboard() {
   // Layout states
   const [activeSection, setActiveSection] = useState('dashboard'); // dashboard, map, wishlist, route, chat, budget, weather, translator
   const [showStepper, setShowStepper] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [rightPanelOpen, setRightPanelOpen] = useState(true);
   const [activeRoutePolyline, setActiveRoutePolyline] = useState(null);
 
@@ -209,16 +209,16 @@ export default function Dashboard() {
       </AnimatePresence>
 
       {/* STICKY INTERNAL HEADER NAVBAR */}
-      <header className="fixed top-0 left-0 w-full z-40 bg-white/[0.04] backdrop-blur-md border-b border-white/10 px-6 py-4 flex items-center justify-between shadow-lg">
-        <div className="flex items-center gap-3">
+      <header className="fixed top-0 left-0 w-full z-40 bg-white/[0.04] backdrop-blur-md border-b border-white/10 px-4 sm:px-6 py-4 flex items-center justify-between shadow-lg">
+        <div className="flex items-center gap-3 shrink-0">
           <button 
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-1.5 rounded-lg bg-white/5 border border-white/10 text-white/80 hover:text-white"
+            className="p-1.5 rounded-lg bg-white/5 border border-white/10 text-white/80 hover:text-white md:hidden"
           >
             <Menu className="w-4 h-4" />
           </button>
           
-          <Link to="/" className="flex items-center gap-2">
+          <Link to="/" className="flex items-center gap-2 shrink-0">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-violet-650 to-indigo-650 flex items-center justify-center shadow-md">
               <Compass className="w-4 h-4 text-white" />
             </div>
@@ -229,24 +229,24 @@ export default function Dashboard() {
         </div>
 
         {/* Dynamic header info */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4 shrink-0">
           <button 
             onClick={() => setRightPanelOpen(!rightPanelOpen)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-violet-600/20 border border-violet-500/35 text-[10px] font-bold text-violet-300 transition-all hover:bg-violet-600/30"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-1.5 rounded-xl bg-violet-600/20 border border-violet-500/35 text-[10px] font-bold text-violet-300 transition-all hover:bg-violet-600/30"
           >
             <Heart className="w-3.5 h-3.5 fill-violet-400" />
-            <span>Wishlist Panel</span>
+            <span className="hidden sm:inline">Wishlist Panel</span>
           </button>
 
           <Link to="/" className="flex items-center gap-1 text-[10px] font-bold text-white/50 hover:text-white">
             <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Home</span>
+            <span className="hidden sm:inline">Home</span>
           </Link>
 
-          <div className="h-4 w-px bg-white/10" />
+          <div className="h-4 w-px bg-white/10 hidden sm:block" />
 
           {/* User Account Avatar bubble */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             <div className="w-8 h-8 rounded-full bg-violet-650/20 border border-violet-900/35 text-violet-300 font-bold text-xs flex items-center justify-center">
               {user?.fullName?.charAt(0) || 'T'}
             </div>
@@ -258,59 +258,113 @@ export default function Dashboard() {
       {/* CORE CONTENT LAYOUT */}
       <div className="flex-1 flex pt-[72px] min-h-screen">
         
-        {/* LEFT COLLAPSIBLE SIDEBAR */}
-        <aside className={`sidebar-transition shrink-0 border-r border-white/5 bg-slate-950/40 relative z-30 ${
-          sidebarOpen ? 'w-60' : 'w-0 overflow-hidden border-r-0'
-        }`}>
-          <div className="p-4 space-y-2 mt-4">
-            {[
-              { id: 'dashboard', label: 'Dashboard', icon: <Home className="w-4 h-4" /> },
-              { id: 'map', label: 'Interactive Map', icon: <Map className="w-4 h-4" /> },
-              { id: 'route', label: 'Find Route', icon: <Compass className="w-4 h-4" /> },
-              { id: 'chat', label: 'Group Chat', icon: <MessageSquare className="w-4 h-4" />, visible: preferences?.travelMode === 'GROUP' },
-              { id: 'budget', label: 'Budget Tracker', icon: <Wallet className="w-4 h-4" /> },
-              { id: 'weather', label: 'Weather Forecast', icon: <Sun className="w-4 h-4" /> },
-              { id: 'translator', label: 'Translator', icon: <Languages className="w-4 h-4" /> }
-            ].map((tab) => {
-              if (tab.visible === false) return null;
-              const isActive = activeSection === tab.id;
+        {/* MOBILE DRAWERS BACKDROPS */}
+        {sidebarOpen && (
+          <div 
+            onClick={() => setSidebarOpen(false)}
+            className="fixed inset-0 top-[72px] z-20 bg-black/40 backdrop-blur-sm md:hidden"
+          />
+        )}
+        {rightPanelOpen && (
+          <div 
+            onClick={() => setRightPanelOpen(false)}
+            className="fixed inset-0 top-[72px] z-20 bg-black/40 backdrop-blur-sm md:hidden"
+          />
+        )}
 
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveSection(tab.id)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold tracking-wide transition-all text-left ${
-                    isActive 
-                      ? 'bg-violet-600/20 border-l-2 border-violet-500 text-white font-extrabold shadow-sm' 
-                      : 'text-white/60 hover:bg-white/5 hover:text-white'
-                  }`}
-                >
-                  {tab.icon}
-                  <span>{tab.label}</span>
-                </button>
-              );
-            })}
-
-            <div className="h-px bg-white/5 my-6" />
-
-            <button
-              onClick={handleLogout}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold text-red-400 hover:bg-red-950/20 text-left transition-all"
-            >
-              <LogOut className="w-4 h-4" />
-              <span>Sign Out</span>
-            </button>
+        {/* Mobile Dropdown Navigation Menu Overlay */}
+        {sidebarOpen && (
+          <div className="md:hidden fixed top-[72px] left-0 w-full z-30 bg-slate-950/95 backdrop-blur-xl border-b border-white/10 p-4 shadow-2xl animate-dashboard-fade">
+            <div className="flex flex-col gap-3">
+              {[
+                { id: 'dashboard', label: 'Home', icon: <Home className="w-4 h-4" /> },
+                { id: 'map', label: 'Interactive Map', icon: <Map className="w-4 h-4" /> },
+                { id: 'route', label: 'Find Route', icon: <Compass className="w-4 h-4" /> },
+                { id: 'weather', label: 'Weather Forecast', icon: <Sun className="w-4 h-4" /> },
+                { id: 'translator', label: 'Language Translator', icon: <Languages className="w-4 h-4" /> },
+                { id: 'budget', label: 'Budget Tracker', icon: <Wallet className="w-4 h-4" /> }
+              ].map((item) => {
+                const isActive = activeSection === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      setActiveSection(item.id);
+                      setSidebarOpen(false);
+                    }}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold tracking-wide transition-all text-left ${
+                      isActive 
+                        ? 'bg-violet-600/20 border-l-2 border-violet-500 text-white font-extrabold shadow-sm' 
+                        : 'text-white/60 hover:bg-white/5 hover:text-white'
+                    }`}
+                  >
+                    {item.icon}
+                    <span>{item.label}</span>
+                  </button>
+                );
+              })}
+              
+              {/* Modify Plans button */}
+              <button
+                onClick={() => {
+                  setShowStepper(true);
+                  setSidebarOpen(false);
+                }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold tracking-wide transition-all text-left text-white/80 hover:bg-white/5 hover:text-white border border-white/10 bg-white/5 mt-2"
+              >
+                <Settings className="w-4 h-4" />
+                <span>Modify Plans</span>
+              </button>
+            </div>
           </div>
-        </aside>
+        )}
 
         {/* CENTER MAIN CONTENT WORKSPACE */}
         <main className="flex-1 p-6 md:p-8 space-y-8 overflow-y-auto animate-dashboard-fade">
           
-          {/* Active Summary Panel */}
-          <TravelSummaryCard 
-            preferences={preferences} 
-            onEdit={() => setShowStepper(true)} 
-          />
+          {/* GLOBAL NAVIGATION MENU */}
+          <div className="space-y-4">
+            {/* Desktop Horizontal Navigation Menu */}
+            <div className="hidden md:block w-full">
+              <div className="glass-panel p-2 flex items-center justify-between gap-2 bg-white/[0.03] border-white/[0.08] rounded-2xl shadow-lg">
+                <div className="flex items-center gap-1.5 flex-grow justify-start">
+                  {[
+                    { id: 'dashboard', label: 'Home', icon: <Home className="w-4 h-4" /> },
+                    { id: 'map', label: 'Interactive Map', icon: <Map className="w-4 h-4" /> },
+                    { id: 'route', label: 'Find Route', icon: <Compass className="w-4 h-4" /> },
+                    { id: 'weather', label: 'Weather Forecast', icon: <Sun className="w-4 h-4" /> },
+                    { id: 'translator', label: 'Language Translator', icon: <Languages className="w-4 h-4" /> },
+                    { id: 'budget', label: 'Budget Tracker', icon: <Wallet className="w-4 h-4" /> }
+                  ].map((item) => {
+                    const isActive = activeSection === item.id;
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => setActiveSection(item.id)}
+                        className={`flex items-center gap-2 px-4 py-3 rounded-xl text-xs font-bold transition-all ${
+                          isActive 
+                            ? 'bg-violet-600/25 border border-violet-500/35 text-white shadow-md' 
+                            : 'text-white/60 hover:bg-white/5 hover:text-white'
+                        }`}
+                      >
+                        {item.icon}
+                        <span>{item.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Modify Plans button */}
+                <button
+                  onClick={() => setShowStepper(true)}
+                  className="flex items-center gap-1.5 px-4 py-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-xs font-bold text-white transition-all shrink-0"
+                >
+                  <Settings className="w-4 h-4" />
+                  <span>Modify Plans</span>
+                </button>
+              </div>
+            </div>
+          </div>
 
           {/* DYNAMIC SUBSECTION RENDERING */}
           {activeSection === 'dashboard' && (
@@ -542,9 +596,14 @@ export default function Dashboard() {
         </main>
 
         {/* RIGHT DRAWER WISHLIST SIDEBAR */}
-        <aside className={`sidebar-transition shrink-0 border-l border-white/5 bg-slate-950/40 relative z-30 ${
-          rightPanelOpen ? 'w-80' : 'w-0 overflow-hidden border-l-0'
-        }`}>
+        <aside className={`transition-all duration-300 ease-in-out shrink-0 border-l border-white/5 z-30
+          fixed md:relative top-[72px] md:top-0 right-0 h-[calc(100vh-72px)] md:h-auto
+          bg-slate-950/95 md:bg-slate-950/40 backdrop-blur-xl md:backdrop-blur-none
+          ${rightPanelOpen 
+            ? 'w-80 translate-x-0' 
+            : 'w-0 translate-x-full md:translate-x-0 md:w-0 overflow-hidden border-l-0'
+          }`}
+        >
           <div className="p-4 h-full">
             <WishlistPanel
               wishlist={wishlist}
