@@ -106,7 +106,7 @@ export default function AITravelPlanner() {
 
         {/* Lock Screen if Logged Out */}
         {!isAuthenticated ? (
-          <div className="clay-card max-w-2xl mx-auto p-8 md:p-12 text-center bg-slate-900/40 border border-slate-800">
+          <div className="clay-card clay-card-hover max-w-2xl mx-auto p-8 md:p-12 text-center bg-slate-900/40 border border-slate-800">
             <Compass className="w-16 h-16 text-primary-light mx-auto mb-6 animate-spin-slow" />
             <h3 className="text-2xl font-extrabold font-display">Secure AI Planner Gate</h3>
             <p className="mt-3 text-slate-350 text-sm leading-relaxed max-w-md mx-auto">
@@ -133,7 +133,7 @@ export default function AITravelPlanner() {
             
             {/* If NO active itinerary exists, show the multi-step wizard */}
             {!activeItinerary ? (
-              <div className="clay-card p-6 md:p-10 bg-slate-900/50 border border-slate-850">
+              <div className="clay-card clay-card-hover p-6 md:p-10 bg-slate-900/50 border border-slate-850">
                 
                 {/* Steps indicator bar */}
                 <div className="flex justify-between items-center mb-10 max-w-md mx-auto relative">
@@ -370,7 +370,7 @@ export default function AITravelPlanner() {
               >
                 
                 {/* Result Hero Header */}
-                <div className="clay-card p-6 md:p-8 bg-gradient-to-r from-primary/10 via-purple-950/20 to-indigo-950/20 border border-purple-900/25 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 text-left">
+                <div className="clay-card clay-card-hover p-6 md:p-8 bg-gradient-to-r from-primary/10 via-purple-950/20 to-indigo-950/20 border border-purple-900/25 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 text-left">
                   <div>
                     <span className="px-3 py-1 rounded-lg bg-green-500 text-white text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 w-fit mb-3">
                       <CheckCircle2 className="w-3.5 h-3.5" />
@@ -420,7 +420,7 @@ export default function AITravelPlanner() {
                     </div>
 
                     {/* Active Day detailed timeline card */}
-                    <div className="clay-card p-6 md:p-8 bg-slate-900/60 border border-slate-850">
+                    <div className="clay-card clay-card-hover p-6 md:p-8 bg-slate-900/60 border border-slate-850">
                       
                       <div className="flex items-center gap-2 mb-6">
                         <span className="w-8 h-8 rounded-lg bg-primary/20 text-primary-light flex items-center justify-center font-extrabold text-sm">
@@ -476,7 +476,7 @@ export default function AITravelPlanner() {
                   <div className="lg:col-span-5 space-y-6">
                     
                     {/* Weather card */}
-                    <div className="clay-card p-5 bg-slate-900/60 border border-slate-850 flex items-center gap-4">
+                    <div className="clay-card clay-card-hover p-5 bg-slate-900/60 border border-slate-850 flex items-center gap-4">
                       <div className="w-12 h-12 rounded-2xl bg-sky-500/15 text-sky-400 flex items-center justify-center text-xl">
                         <CloudSun className="w-6 h-6 animate-pulse" />
                       </div>
@@ -487,7 +487,7 @@ export default function AITravelPlanner() {
                     </div>
 
                     {/* Hotel Recommendations */}
-                    <div className="clay-card p-6 bg-slate-900/60 border border-slate-850">
+                    <div className="clay-card clay-card-hover p-6 bg-slate-900/60 border border-slate-850">
                       <h4 className="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4 flex items-center gap-1.5">
                         <Hotel className="w-4 h-4 text-primary" />
                         <span>Recommended Hotels</span>
@@ -513,7 +513,7 @@ export default function AITravelPlanner() {
                     </div>
 
                     {/* Packing suggestions */}
-                    <div className="clay-card p-6 bg-slate-900/60 border border-slate-850">
+                    <div className="clay-card clay-card-hover p-6 bg-slate-900/60 border border-slate-850">
                       <h4 className="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4 flex items-center gap-1.5">
                         <Luggage className="w-4 h-4 text-primary" />
                         <span>Packing Suggestions</span>

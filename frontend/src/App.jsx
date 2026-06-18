@@ -10,11 +10,13 @@ import NotFound from './pages/NotFound'
 import ProtectedRoute from './components/ProtectedRoute'
 import { AuthProvider } from './context/AuthContext'
 import AuthCallback from './pages/AuthCallback'
+import ToastContainer from './components/ui/ToastContainer'
 
 export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
+        <ToastContainer />
         <Routes>
           {/* Landing Page with all custom widgets */}
           <Route path="/" element={<Home />} />

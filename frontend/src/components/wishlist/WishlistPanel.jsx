@@ -1,7 +1,8 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { GlassCard } from '../ui/GlassCard'
 import WishlistItem from './WishlistItem'
 import { Heart, Compass, Map, Sparkles, Loader, X } from 'lucide-react'
+import { useToastStore } from '../../store/useToastStore'
 
 const middleColors = [
   '#f59e0b', // Amber/Orange
@@ -80,13 +81,64 @@ export default function WishlistPanel({
   onFindScenicRoute,
   activeRoute = null,
   onClearRoute,
-  onDrawRoute
+  onDrawRoute,
+  userCoords = null
 }) {
   const [draggedIndex, setDraggedIndex] = useState(null);
+  const { addToast } = useToastStore();
   const [routingShortest, setRoutingShortest] = useState(false);
   const [routingScenic, setRoutingScenic] = useState(false);
   const [routingOrder, setRoutingOrder] = useState(false);
-  const [startFromCurrent, setStartFromCurrent] = useState(false);
+  const [startFromCurrent, setStartFromCurrent] = useState(() => {
+    return activeRoute && activeRoute.stops && activeRoute.stops[0] === "Current Location";
+  });
+  const [panelUserCoords, setPanelUserCoords] = useState(userCoords);
+
+  useEffect(() => {
+    if (userCoords) {
+      setPanelUserCoords(userCoords);
+    }
+  }, [userCoords]);
+
+  useEffect(() => {
+    if (activeRoute && activeRoute.stops) {
+      setStartFromCurrent(activeRoute.stops[0] === "Current Location");
+    }
+  }, [activeRoute]);
+
+  // When startFromCurrent is checked, fetch coordinates if not already fetched
+  useEffect(() => {
+    if (startFromCurrent && !panelUserCoords) {
+      getUserCoordinates().then(coords => {
+        if (coords) {
+          setPanelUserCoords(coords);
+        }
+      });
+    }
+  }, [startFromCurrent, panelUserCoords]);
+
+  const [currentTemp, setCurrentTemp] = useState(null);
+
+  // Fetch current location weather
+  useEffect(() => {
+    if (panelUserCoords) {
+      const fetchCurrentWeather = async () => {
+        try {
+          const openWeatherKey = import.meta.env.VITE_OPENWEATHER_API_KEY;
+          const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${panelUserCoords.lat}&lon=${panelUserCoords.lng}&units=metric&appid=${openWeatherKey}`);
+          if (response.ok) {
+            const data = await response.json();
+            if (data && data.main) {
+              setCurrentTemp(Math.round(data.main.temp));
+            }
+          }
+        } catch (e) {
+          console.error("Failed to fetch current location weather:", e);
+        }
+      };
+      fetchCurrentWeather();
+    }
+  }, [panelUserCoords]);
 
   const isOrderActive = activeRoute && activeRoute.routingMode === 'order';
   const isOptimizeActive = activeRoute && activeRoute.routingMode === 'optimize';
@@ -120,7 +172,7 @@ export default function WishlistPanel({
     }
     const minStops = startFromCurrent ? 1 : 2;
     if (wishlist.length < minStops) {
-      alert(startFromCurrent ? "Please add at least 1 stop to draw a route." : "Please add at least 2 stops to draw a route.");
+      addToast(startFromCurrent ? "Please add at least 1 stop to draw a route." : "Please add at least 2 stops to draw a route.", "warning");
       return;
     }
 
@@ -129,9 +181,9 @@ export default function WishlistPanel({
       try {
         let placeNames = wishlist.map(p => p.placeName);
         if (startFromCurrent) {
-          const coords = await getUserCoordinates();
+          const coords = panelUserCoords || await getUserCoordinates();
           if (!coords) {
-            alert("Could not access your location. Please check browser location permissions.");
+            addToast("Could not access your location. Please check browser location permissions.", "error");
             setRoutingOrder(false);
             return;
           }
@@ -156,15 +208,15 @@ export default function WishlistPanel({
     }
     const minStops = startFromCurrent ? 1 : 2;
     if (wishlist.length < minStops) {
-      alert(startFromCurrent ? "Please add at least 1 stop to find a route." : "Please add at least 2 stops to find a route.");
+      addToast(startFromCurrent ? "Please add at least 1 stop to find a route." : "Please add at least 2 stops to find a route.", "warning");
       return;
     }
     setRoutingShortest(true);
     try {
       if (startFromCurrent) {
-        const coords = await getUserCoordinates();
+        const coords = panelUserCoords || await getUserCoordinates();
         if (!coords) {
-          alert("Could not access your location. Please check browser location permissions.");
+          addToast("Could not access your location. Please check browser location permissions.", "error");
           return;
         }
         // Run Nearest Neighbor optimization in frontend starting from current coords
@@ -239,19 +291,19 @@ export default function WishlistPanel({
   };
 
   return (
-    <GlassCard className="p-5 flex flex-col h-full bg-white/[0.04] text-left border-white/[0.08]">
+    <div className="clay-card p-5 flex flex-col h-full text-left">
       {/* Title Header */}
-      <div className="flex items-center justify-between border-b border-white/5 pb-3 mb-4 flex-shrink-0">
+      <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/5 pb-3 mb-4 flex-shrink-0">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-rose-500/10 text-rose-400 flex items-center justify-center border border-rose-500/20">
             <Heart className="w-4 h-4 fill-rose-500" />
           </div>
           <div>
-            <h3 className="text-xs font-bold text-white uppercase tracking-wider">🎯 Your Wishlist stops</h3>
-            <p className="text-[9px] text-white/50">Sequence and order of trip highlights</p>
+            <h3 className="text-xs font-bold text-slate-800 dark:text-white uppercase tracking-wider">Your Wishlist stops</h3>
+            <p className="text-[9px] text-slate-500 dark:text-white/50">Sequence and order of trip highlights</p>
           </div>
         </div>
-        <span className="px-2.5 py-0.5 rounded bg-white/5 border border-white/5 text-[10px] font-black text-white">
+        <span className="px-2.5 py-0.5 rounded bg-slate-200 dark:bg-white/5 border border-slate-300 dark:border-white/5 text-[10px] font-black text-slate-700 dark:text-white">
           {wishlist.length} Stops
         </span>
       </div>
@@ -259,80 +311,124 @@ export default function WishlistPanel({
       {/* Draggable Stop list */}
       <div className="pr-1 custom-scrollbar max-h-[380px] overflow-y-auto mb-4 flex flex-col gap-1.5">
         {wishlist.length === 0 ? (
-          <div className="py-16 text-center text-xs text-white/35 flex flex-col items-center justify-center gap-2">
-            <Compass className="w-8 h-8 text-white/20 animate-spin-slow" />
+          <div className="py-16 text-center text-xs text-slate-400 dark:text-white/35 flex flex-col items-center justify-center gap-2">
+            <Compass className="w-8 h-8 text-slate-300 dark:text-white/20 animate-spin-slow" />
             <span>Wishlist is empty. Search state sights on the left and add them!</span>
           </div>
         ) : (
-          wishlist.map((item, index) => {
-            let role = 'middle';
-            if (activeRoute && activeRoute.stops && activeRoute.stops.length > 0) {
-              const cleanName = item.placeName.trim().toLowerCase();
-              const routeIndex = activeRoute.stops.findIndex(stop => stop.trim().toLowerCase() === cleanName);
-              if (routeIndex !== -1) {
-                if (routeIndex === 0) {
-                  role = 'start';
-                } else if (routeIndex === activeRoute.stops.length - 1) {
-                  role = 'end';
-                } else {
-                  role = 'middle';
-                }
-              }
-            } else {
-              if (index === 0) {
-                role = 'start';
-              } else if (index === wishlist.length - 1) {
-                role = 'end';
-              } else {
-                role = 'middle';
-              }
-            }
-
-            const itemColor = getStopColor(role, index);
-            const nextItem = wishlist[index + 1];
-            let distanceText = '';
-            if (nextItem && item.lat && item.lng && nextItem.lat && nextItem.lng) {
-              const dist = calculateHaversineDistance(item.lat, item.lng, nextItem.lat, nextItem.lng);
-              distanceText = `${dist.toFixed(1)} km`;
-            }
-
-            return (
-              <React.Fragment key={item.id}>
-                <WishlistItem
-                  item={item}
-                  index={index}
-                  color={itemColor}
-                  onRemove={onRemove}
-                  onDragStart={handleDragStart}
-                  onDragOver={handleDragOver}
-                  onDragEnd={handleDragEnd}
-                  onDrop={handleDrop}
-                />
-                {index < wishlist.length - 1 && (
-                  <div className="flex flex-col items-center justify-center my-0.5 relative select-none">
-                    <div className="w-[1.5px] h-6 border-l border-dashed border-white/20" />
-                    {distanceText && (
-                      <div 
-                        className="absolute bg-slate-950/90 backdrop-blur-sm border border-white/10 px-2 py-0.5 rounded-full text-[8px] font-black text-violet-300 tracking-wider shadow-sm flex items-center gap-1"
-                        style={{ textShadow: '0 0 4px rgba(139, 92, 246, 0.4)' }}
-                        title={`Distance from ${item.placeName} to ${nextItem?.placeName}`}
-                      >
-                        <span>📍</span>
-                        <span>{distanceText}</span>
-                      </div>
+          <>
+            {/* Current Location Stop (if checked) */}
+            {startFromCurrent && (
+              <>
+                <div className="flex items-center gap-3 p-3.5 rounded-xl bg-white/40 dark:bg-white/[0.04] border border-slate-200 dark:border-white/5">
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black text-white bg-emerald-500 shadow-lg">
+                    1
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-xs font-bold text-slate-800 dark:text-white truncate">Current Location</h4>
+                    <p className="text-[9px] text-emerald-600 dark:text-emerald-400 font-semibold uppercase tracking-wide">Starting Point</p>
+                    {currentTemp !== null && (
+                      <p className="text-[10px] font-black text-sky-655 dark:text-sky-400 mt-0.5 flex items-center gap-1 select-none">
+                        <span>🌤️</span>
+                        <span>{currentTemp}°C</span>
+                      </p>
                     )}
                   </div>
-                )}
-              </React.Fragment>
-            );
-          })
+                </div>
+                <div className="flex items-center gap-2 pl-12 my-1.5 relative select-none">
+                  {/* Blue line */}
+                  <div className="w-[2px] h-6 bg-blue-500 rounded-full" />
+                  {wishlist[0] && (
+                    <span className="text-[9px] font-black text-blue-400 tracking-wider">
+                      {panelUserCoords && wishlist[0].lat && wishlist[0].lng
+                        ? `${calculateHaversineDistance(panelUserCoords.lat, panelUserCoords.lng, wishlist[0].lat, wishlist[0].lng).toFixed(1)} km`
+                        : "Calculating..."}
+                    </span>
+                  )}
+                </div>
+              </>
+            )}
+
+            {wishlist.map((item, index) => {
+              let role = 'middle';
+              let displayIndex = startFromCurrent ? index + 2 : index + 1;
+
+              if (activeRoute && activeRoute.stops && activeRoute.stops.length > 0) {
+                const cleanName = item.placeName.trim().toLowerCase();
+                const routeIndex = activeRoute.stops.findIndex(stop => stop.trim().toLowerCase() === cleanName);
+                if (routeIndex !== -1) {
+                  displayIndex = routeIndex + 1;
+                  if (routeIndex === 0) {
+                    role = 'start';
+                  } else if (routeIndex === activeRoute.stops.length - 1) {
+                    role = 'end';
+                  } else {
+                    role = 'middle';
+                  }
+                }
+              } else {
+                if (startFromCurrent) {
+                  if (index === wishlist.length - 1) {
+                    role = 'end';
+                  } else {
+                    role = 'middle';
+                  }
+                } else {
+                  if (index === 0) {
+                    role = 'start';
+                  } else if (index === wishlist.length - 1) {
+                    role = 'end';
+                  } else {
+                    role = 'middle';
+                  }
+                }
+              }
+
+              const itemColor = getStopColor(role, startFromCurrent ? index + 1 : index);
+              const nextItem = wishlist[index + 1];
+              let distanceText = '';
+              if (nextItem && item.lat && item.lng && nextItem.lat && nextItem.lng) {
+                const dist = calculateHaversineDistance(item.lat, item.lng, nextItem.lat, nextItem.lng);
+                distanceText = `${dist.toFixed(1)} km`;
+              }
+
+              return (
+                <React.Fragment key={item.id}>
+                  <WishlistItem
+                    item={item}
+                    index={index}
+                    displayIndex={displayIndex}
+                    color={itemColor}
+                    onRemove={onRemove}
+                    onDragStart={handleDragStart}
+                    onDragOver={handleDragOver}
+                    onDragEnd={handleDragEnd}
+                    onDrop={handleDrop}
+                  />
+                  {index < wishlist.length - 1 && (
+                    <div className="flex items-center gap-2 pl-12 my-1.5 relative select-none">
+                      {/* Blue line */}
+                      <div className="w-[2px] h-6 bg-blue-500 rounded-full" />
+                      
+                      {/* Distance text shown beside it */}
+                      {distanceText && (
+                        <span className="text-[9px] font-black text-blue-400 tracking-wider">
+                          {distanceText}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </React.Fragment>
+              );
+            })}
+          </>
         )}
       </div>
 
       {/* Reorder instructions & Routing CTAs */}
       {wishlist.length > 0 && (
-        <div className="pt-3 border-t border-white/5 space-y-3">
-          <p className="text-[9px] text-white/30 text-center italic">
+        <div className="pt-3 border-t border-slate-200 dark:border-white/5 space-y-3">
+          <p className="text-[9px] text-slate-500 dark:text-white/30 text-center italic">
             💡 Tip: Drag and drop stops to change their rank and plan your route.
           </p>
 
@@ -341,11 +437,34 @@ export default function WishlistPanel({
               id="gmap-checkbox-start-current"
               type="checkbox"
               checked={startFromCurrent}
-              onChange={(e) => setStartFromCurrent(e.target.checked)}
-              className="w-3.5 h-3.5 rounded border-white/20 bg-white/5 text-violet-650 focus:ring-violet-500 focus:ring-offset-slate-950 cursor-pointer"
+              onChange={async (e) => {
+                const checked = e.target.checked;
+                setStartFromCurrent(checked);
+                
+                // If checked, fetch geolocation coords immediately
+                if (checked && !panelUserCoords) {
+                  const coords = await getUserCoordinates();
+                  if (coords) {
+                    setPanelUserCoords(coords);
+                  }
+                }
+                
+                // Also trigger route redraw/recalculation if route is active!
+                if (activeRoute) {
+                  const hasCurrent = activeRoute.stops && activeRoute.stops[0] === "Current Location";
+                  if (checked && !hasCurrent) {
+                    const newStops = ["Current Location", ...activeRoute.stops.filter(s => s !== "Current Location")];
+                    onDrawRoute(activeRoute.polyline, activeRoute.isScenic, activeRoute.totalDistance, activeRoute.totalDuration, newStops, activeRoute.routingMode);
+                  } else if (!checked && hasCurrent) {
+                    const newStops = activeRoute.stops.filter(s => s !== "Current Location");
+                    onDrawRoute(activeRoute.polyline, activeRoute.isScenic, activeRoute.totalDistance, activeRoute.totalDuration, newStops, activeRoute.routingMode);
+                  }
+                }
+              }}
+              className="w-3.5 h-3.5 rounded border-slate-300 dark:border-white/20 bg-white/5 text-violet-650 focus:ring-violet-500 focus:ring-offset-slate-950 cursor-pointer"
             />
-            <label htmlFor="gmap-checkbox-start-current" className="text-[10px] text-white/70 font-semibold cursor-pointer select-none">
-              Start route from my current location 🎯
+            <label htmlFor="gmap-checkbox-start-current" className="text-[10px] text-slate-700 dark:text-white/70 font-semibold cursor-pointer select-none">
+              Start route from my current location
             </label>
           </div>
 
@@ -390,6 +509,6 @@ export default function WishlistPanel({
           </div>
         </div>
       )}
-    </GlassCard>
+    </div>
   )
 }

@@ -95,6 +95,39 @@ export default function WeatherWidget({ destinations = [], initialSelectedCity =
         </div>
       </GlassCard>
 
+      {/* All Route Stopovers at the top of current condition section */}
+      {destinations.length > 0 && (
+        <div className="space-y-2 bg-white/[0.01] border border-white/5 p-4 rounded-2xl">
+          <h4 className="text-[10px] font-bold text-white/50 uppercase tracking-wider">
+            All Route Stopover Climates
+          </h4>
+          <div className="flex flex-wrap gap-2">
+            {destinations.map((dest) => {
+              const city = dest.placeName || dest.name;
+              const info = weatherData[city.toLowerCase()];
+              return (
+                <button
+                  key={`top-stopover-${dest.id}`}
+                  onClick={() => setSelectedCity(city)}
+                  className={`px-3 py-1.5 rounded-xl border text-[10px] font-semibold transition-all flex items-center gap-2 ${
+                    selectedCity.toLowerCase() === city.toLowerCase()
+                      ? 'bg-violet-500/20 border-violet-500 text-white'
+                      : 'bg-white/5 border-white/5 text-white/60 hover:bg-white/10 hover:text-white'
+                  }`}
+                >
+                  <span>{city}</span>
+                  {info ? (
+                    <span className="text-orange-400 font-bold">{Math.round(info.temp)}°C</span>
+                  ) : (
+                    <span className="text-white/20 animate-pulse">...</span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Main Selected City Forecast */}
       {activeInfo ? (
         <div className="space-y-6 animate-fadeIn">
@@ -113,9 +146,6 @@ export default function WeatherWidget({ destinations = [], initialSelectedCity =
                 
                 <div>
                   <h2 className="text-2xl font-black text-white leading-none">{activeInfo.city}</h2>
-                  <p className="text-[10px] text-white/50 capitalize font-medium italic mt-1">
-                    "{activeInfo.description}"
-                  </p>
                 </div>
 
                 <div className="flex items-center gap-6 mt-2">
@@ -156,7 +186,6 @@ export default function WeatherWidget({ destinations = [], initialSelectedCity =
                       <div className="text-lg font-black text-white leading-none">
                         {Math.round(day.temp)}°C
                       </div>
-                      <p className="text-[9px] text-white/60 truncate capitalize">{day.description}</p>
                       <p className="text-[8px] text-sky-400/80 font-semibold">{day.humidity}% Hum.</p>
                     </div>
                   ))}
@@ -175,7 +204,7 @@ export default function WeatherWidget({ destinations = [], initialSelectedCity =
             
             <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3">
               {activeInfo.futureForecast && activeInfo.futureForecast.map((day, idx) => (
-                <GlassCard key={`fut-${idx}`} className="p-3 bg-white/[0.02] border border-white/5 flex flex-col justify-between gap-2 text-center">
+                <GlassCard key={`fut-${idx}`} className="p-3 bg-white/[0.02] border border-white/5 flex flex-col justify-between gap-2 text-center transition-all duration-300 hover:scale-[1.06] hover:bg-white/[0.07] hover:border-violet-500/40 hover:shadow-lg hover:shadow-violet-500/10 cursor-pointer">
                   <div>
                     <span className="text-[9px] font-bold text-white/40 block mb-0.5">{day.date}</span>
                     <span className="text-lg font-black text-white block">
@@ -188,7 +217,6 @@ export default function WeatherWidget({ destinations = [], initialSelectedCity =
                   </div>
                   
                   <div>
-                    <p className="text-[8px] text-white/70 line-clamp-1 capitalize italic">"{day.description}"</p>
                     <div className="text-[8px] text-sky-400 font-bold mt-1">
                       💧{day.humidity}%
                     </div>
@@ -205,38 +233,6 @@ export default function WeatherWidget({ destinations = [], initialSelectedCity =
         </GlassCard>
       )}
 
-      {/* Wishlist Overview Footer Capsules */}
-      {destinations.length > 1 && (
-        <div className="pt-4 border-t border-white/5 space-y-2">
-          <h4 className="text-[10px] font-bold text-white/50 uppercase tracking-wider">
-            All Route Stopover Climates
-          </h4>
-          <div className="flex flex-wrap gap-2">
-            {destinations.map((dest) => {
-              const city = dest.placeName || dest.name;
-              const info = weatherData[city.toLowerCase()];
-              return (
-                <button
-                  key={`footer-${dest.id}`}
-                  onClick={() => setSelectedCity(city)}
-                  className={`px-3 py-1.5 rounded-xl border text-[10px] font-semibold transition-all flex items-center gap-2 ${
-                    selectedCity.toLowerCase() === city.toLowerCase()
-                      ? 'bg-violet-500/20 border-violet-500 text-white'
-                      : 'bg-white/5 border-white/5 text-white/60 hover:bg-white/10 hover:text-white'
-                  }`}
-                >
-                  <span>{city}</span>
-                  {info ? (
-                    <span className="text-orange-400 font-bold">{Math.round(info.temp)}°C</span>
-                  ) : (
-                    <span className="text-white/20 animate-pulse">...</span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
     </div>
   )
 }

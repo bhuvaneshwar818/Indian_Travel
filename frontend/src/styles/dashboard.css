@@ -2,9 +2,79 @@
 
 .dashboard-root {
   font-family: 'Inter', sans-serif;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%);
+  color: #1e293b;
+  min-height: 100vh;
+}
+
+/* Force dark text and overrides for light theme on dashboard */
+.dashboard-root :not(.bg-violet-650):not(.bg-violet-600):not(.bg-teal-650):not(.bg-teal-600):not(.bg-rose-500):not(.bg-rose-600):not(.bg-emerald-500):not(.clay-btn-primary) > .text-white,
+.dashboard-root h1.text-white,
+.dashboard-root h2.text-white,
+.dashboard-root h3.text-white,
+.dashboard-root h4.text-white,
+.dashboard-root p.text-white,
+.dashboard-root span.text-white:not(.bg-emerald-500):not(.bg-teal-650):not(.bg-teal-600) {
+  color: #1e293b !important;
+}
+
+.dashboard-root .text-white\/80 {
+  color: #334155 !important;
+}
+.dashboard-root .text-white\/70 {
+  color: #334155 !important;
+}
+.dashboard-root .text-white\/60 {
+  color: #475569 !important;
+}
+.dashboard-root .text-white\/50 {
+  color: #475569 !important;
+}
+.dashboard-root .text-white\/40 {
+  color: #64748b !important;
+}
+.dashboard-root .text-white\/30 {
+  color: #94a3b8 !important;
+}
+.dashboard-root .text-white\/20 {
+  color: #cbd5e1 !important;
+}
+
+/* Dark mode overrides */
+.dark .dashboard-root {
   background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
   color: #f1f5f9;
-  min-height: 100vh;
+}
+.dark .dashboard-root .text-white,
+.dark .dashboard-root :not(.bg-violet-650):not(.bg-violet-600):not(.bg-teal-650):not(.bg-teal-600):not(.bg-rose-500):not(.bg-rose-600):not(.bg-emerald-500):not(.clay-btn-primary) > .text-white,
+.dark .dashboard-root h1.text-white,
+.dark .dashboard-root h2.text-white,
+.dark .dashboard-root h3.text-white,
+.dark .dashboard-root h4.text-white,
+.dark .dashboard-root p.text-white,
+.dark .dashboard-root span.text-white {
+  color: #ffffff !important;
+}
+.dark .dashboard-root .text-white\/80 {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+.dark .dashboard-root .text-white\/70 {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+.dark .dashboard-root .text-white\/60 {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+.dark .dashboard-root .text-white\/50 {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+.dark .dashboard-root .text-white\/40 {
+  color: rgba(255, 255, 255, 0.4) !important;
+}
+.dark .dashboard-root .text-white\/30 {
+  color: rgba(255, 255, 255, 0.3) !important;
+}
+.dark .dashboard-root .text-white\/20 {
+  color: rgba(255, 255, 255, 0.2) !important;
 }
 
 .dashboard-heading {

@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import { useTripStore } from '../store/tripStore'
 import { useAuthStore } from '../store/authStore'
+import { useToastStore } from '../store/useToastStore'
 import { Search, MapPin, Sparkles, Star, Plus, Check, Compass, Info, CloudSun, Utensils, HelpCircle } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import India from '@svg-maps/india'
+import { indianTravelData } from '../lib/indianTravelData'
 
 const STATES = [
   "all",
@@ -224,42 +226,62 @@ const FALLBACK_DESTINATIONS = {
   ]
 }
 
-const getDynamicDestinations = (selectedState, apiDestinations) => {
-  if (selectedState === 'all') return apiDestinations;
-  if (apiDestinations.length > 0) return apiDestinations.filter(d => d.state === selectedState);
-  
-  if (FALLBACK_DESTINATIONS[selectedState]) {
-    return FALLBACK_DESTINATIONS[selectedState];
-  }
-  
-  return [
-    {
-      id: `${selectedState}-dyn1`,
-      name: `${selectedState} Heritage Hub`,
-      city: "Capital City",
-      state: selectedState,
-      category: "Historical",
-      description: `Explore the beautiful heritage sights, local cultural festivals, and pristine landscapes across ${selectedState}. Tap our AI Trip Planner wizard to get a complete custom itinerary!`,
-      rating: 4.7,
-      imageUrl: "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=600",
-      foodSpots: "Traditional local thali and regional desserts",
-      weatherInfo: "Warm, comfortable seasonal climate (22°C - 32°C)",
-      famousPlaces: "City Palace, Heritage Museum, Local Markets"
-    },
-    {
-      id: `${selectedState}-dyn2`,
-      name: `${selectedState} Nature Reserve`,
-      city: "Scenic Valley",
-      state: selectedState,
-      category: "Adventure",
-      description: `Embark on an outdoor trail to discover hidden valleys, lush green forests, and serene lake viewpoints in the heart of ${selectedState}.`,
-      rating: 4.8,
-      imageUrl: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600",
-      foodSpots: "Fresh local organic specialties and hot spiced teas",
-      weatherInfo: "Fresh mountain and valley air (18°C - 28°C)",
-      famousPlaces: "Sunset Point, Nature Trails, Lake Sanctuary"
+const mapTypeToCategoryId = (type) => {
+  const t = (type || "").toLowerCase();
+  if (t.includes("beach")) return "Beaches";
+  if (t.includes("historic") || t.includes("heritage") || t.includes("monument") || t.includes("culture")) return "Historical";
+  if (t.includes("spirit") || t.includes("temple")) return "Temples";
+  if (t.includes("adventure") || t.includes("nature") || t.includes("hill") || t.includes("wildlife")) return "Adventure";
+  if (t.includes("food") || t.includes("culinary")) return "Food";
+  return "all";
+};
+
+const getDynamicDestinations = (selectedState, category = 'all') => {
+  let list = [];
+  if (selectedState === 'all') {
+    indianTravelData.forEach(stObj => {
+      stObj.places.forEach((p, idx) => {
+        list.push({
+          id: `explorer-${stObj.state.replace(/\s+/g, '-')}-${idx}`,
+          name: p.name,
+          city: p.name.split(' ')[0].replace(/[()]/g, ''),
+          state: stObj.state,
+          category: mapTypeToCategoryId(p.type),
+          description: p.info,
+          imageUrl: p.image,
+          rating: 4.8,
+          foodSpots: "Traditional local dishes",
+          weatherInfo: "Pleasant seasonal climate",
+          famousPlaces: p.name
+        });
+      });
+    });
+  } else {
+    const stObj = indianTravelData.find(st => st.state.toLowerCase() === selectedState.toLowerCase());
+    if (stObj) {
+      stObj.places.forEach((p, idx) => {
+        list.push({
+          id: `explorer-${selectedState.replace(/\s+/g, '-')}-${idx}`,
+          name: p.name,
+          city: p.name.split(' ')[0].replace(/[()]/g, ''),
+          state: selectedState,
+          category: mapTypeToCategoryId(p.type),
+          description: p.info,
+          imageUrl: p.image,
+          rating: 4.8,
+          foodSpots: "Traditional local dishes",
+          weatherInfo: "Pleasant seasonal climate",
+          famousPlaces: p.name
+        });
+      });
     }
-  ];
+  }
+
+  // Filter by category
+  if (category && category !== 'all') {
+    list = list.filter(d => d.category === category);
+  }
+  return list;
 }
 
 
@@ -548,6 +570,7 @@ const stateData = {
 export default function SearchDropdowns() {
   const { destinations, bookmarks, fetchDestinations, fetchBookmarks, addBookmark, removeBookmark, loading } = useTripStore()
   const { isAuthenticated } = useAuthStore()
+  const { addToast } = useToastStore()
 
   const [state, setState] = useState("all")
   const [category, setCategory] = useState("all")
@@ -562,16 +585,28 @@ export default function SearchDropdowns() {
   const leftColRef = React.useRef(null)
   const [rightPanelHeight, setRightPanelHeight] = useState(null)
 
-  // Observe left column height changes and sync right panel
+  // Observe left column height changes and sync right panel (only on desktop screen sizes)
   useEffect(() => {
     const el = leftColRef.current
     if (!el) return
-    const observer = new ResizeObserver(() => {
-      setRightPanelHeight(el.offsetHeight)
-    })
+    
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        setRightPanelHeight(el.offsetHeight)
+      } else {
+        setRightPanelHeight(null) // Reset height style on mobile
+      }
+    }
+    
+    const observer = new ResizeObserver(handleResize)
     observer.observe(el)
-    setRightPanelHeight(el.offsetHeight)
-    return () => observer.disconnect()
+    handleResize()
+    
+    window.addEventListener('resize', handleResize)
+    return () => {
+      observer.disconnect()
+      window.removeEventListener('resize', handleResize)
+    }
   }, [])
 
   // Fetch bookmarks on mount
@@ -611,13 +646,17 @@ export default function SearchDropdowns() {
 
   const handleBookmarkToggle = (destId) => {
     if (!isAuthenticated) {
-      alert("Please log in to save destinations to your wishlist!")
+      addToast("Please log in to save destinations to your wishlist!", "warning")
       return
     }
+    const dest = destinations.find(d => d.id === destId)
+    const placeName = dest ? dest.name : "Destination"
     if (isBookmarked(destId)) {
       removeBookmark(destId)
+      addToast(`Removed "${placeName}" from your travel wishlist!`, "success")
     } else {
       addBookmark(destId)
+      addToast(`Added "${placeName}" to your travel wishlist!`, "success")
     }
   }
 
@@ -640,7 +679,7 @@ export default function SearchDropdowns() {
     desc: `We are currently mapping out popular destinations, culinary spots, and heritage sights in ${state}. Click a glowing travel hub like Rajasthan, Goa, or Kerala to explore active spots!`
   };
 
-  const displayedDestinations = getDynamicDestinations(state, destinations);
+  const displayedDestinations = getDynamicDestinations(state, category);
 
   return (
     <section id="destinations" className="py-24 bg-slate-50 dark:bg-[#0A0516] relative overflow-hidden">
@@ -667,7 +706,7 @@ export default function SearchDropdowns() {
           <div ref={leftColRef} className="w-full lg:w-[42%] flex-shrink-0 flex flex-col gap-6 text-left">
             
             {/* Claymorphic Filter Panel */}
-            <div className="clay-card p-6 bg-white/80 dark:bg-slate-900/60 border border-slate-200/50 dark:border-slate-800/40">
+            <div className="clay-card clay-card-hover p-6 bg-white/80 dark:bg-slate-900/60 border border-slate-200/50 dark:border-slate-800/40">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 
                 {/* State Select */}
@@ -820,7 +859,7 @@ export default function SearchDropdowns() {
                   <p className="text-sm font-semibold text-slate-500">Searching active spots...</p>
                 </div>
               ) : displayedDestinations.length === 0 ? (
-                <div className="clay-card p-12 text-center bg-white/70 max-w-lg mx-auto w-full dark:bg-slate-900/60">
+                <div className="clay-card clay-card-hover p-12 text-center bg-white/70 max-w-lg mx-auto w-full dark:bg-slate-900/60">
                   <Compass className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
                   <h3 className="text-lg font-bold text-slate-800 dark:text-white">No locations found</h3>
                   <p className="mt-1 text-sm text-slate-550">Try selecting another state, another category, or clear filters.</p>
@@ -832,7 +871,7 @@ export default function SearchDropdowns() {
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.35 }}
-                    className="clay-card group overflow-hidden flex flex-col sm:flex-row bg-white/90 dark:bg-slate-900/70 hover:-translate-y-1.5 hover:shadow-2xl transition-all duration-300 w-full min-h-[200px]"
+                    className="clay-card clay-card-hover group overflow-hidden flex flex-col sm:flex-row bg-white/90 dark:bg-slate-900/70 w-full min-h-[200px]"
                   >
                     
                     {/* Left side: Image Container — wider & taller */}

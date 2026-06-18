@@ -65,7 +65,7 @@ export default function Contact() {
           
           {/* Contact Details Panel */}
           <div className="lg:col-span-5 flex flex-col justify-between space-y-8">
-            <div className="clay-card p-6 md:p-8 bg-slate-50 dark:bg-slate-900/50 flex-grow border border-slate-200/50 dark:border-slate-800/40 space-y-6">
+            <div className="clay-card clay-card-hover p-6 md:p-8 bg-slate-50 dark:bg-slate-900/50 flex-grow border border-slate-200/50 dark:border-slate-800/40 space-y-6">
               
               <h3 className="text-xl font-bold font-display text-slate-950 dark:text-white flex items-center gap-2">
                 <Compass className="w-5 h-5 text-primary animate-pulse-glow" />
@@ -153,7 +153,7 @@ export default function Contact() {
 
           {/* Contact Form Panel */}
           <div className="lg:col-span-7">
-            <div className="clay-card p-6 md:p-8 bg-white/80 dark:bg-slate-900/60 h-full flex flex-col justify-between">
+            <div className="clay-card clay-card-hover p-6 md:p-8 bg-white/80 dark:bg-slate-900/60 h-full flex flex-col justify-between">
               
               <form onSubmit={handleContactSubmit} className="space-y-6">
                 

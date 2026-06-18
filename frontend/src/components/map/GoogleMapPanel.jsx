@@ -2,6 +2,88 @@ import React, { useEffect, useRef, useState } from 'react'
 import { GlassCard } from '../ui/GlassCard'
 import { Navigation, Search, Map, Layers, RefreshCw, Plus, Minus } from 'lucide-react'
 import { API_BASE } from '../../store/authStore'
+import { useThemeStore } from '../../store/themeStore'
+
+const DARK_MAP_STYLES = [
+  { elementType: "geometry", stylers: [{ color: "#242f3e" }] },
+  { elementType: "labels.text.stroke", stylers: [{ color: "#242f3e" }] },
+  { elementType: "labels.text.fill", stylers: [{ color: "#746855" }] },
+  {
+    featureType: "administrative.locality",
+    elementType: "labels.text.fill",
+    stylers: [{ color: "#d59563" }]
+  },
+  {
+    featureType: "poi",
+    elementType: "labels.text.fill",
+    stylers: [{ color: "#d59563" }]
+  },
+  {
+    featureType: "poi.park",
+    elementType: "geometry",
+    stylers: [{ color: "#263c3f" }]
+  },
+  {
+    featureType: "poi.park",
+    elementType: "labels.text.fill",
+    stylers: [{ color: "#6b9a76" }]
+  },
+  {
+    featureType: "road",
+    elementType: "geometry",
+    stylers: [{ color: "#38414e" }]
+  },
+  {
+    featureType: "road",
+    elementType: "geometry.stroke",
+    stylers: [{ color: "#212a37" }]
+  },
+  {
+    featureType: "road",
+    elementType: "labels.text.fill",
+    stylers: [{ color: "#9ca5b3" }]
+  },
+  {
+    featureType: "road.highway",
+    elementType: "geometry",
+    stylers: [{ color: "#746855" }]
+  },
+  {
+    featureType: "road.highway",
+    elementType: "geometry.stroke",
+    stylers: [{ color: "#1f2835" }]
+  },
+  {
+    featureType: "road.highway",
+    elementType: "labels.text.fill",
+    stylers: [{ color: "#f3d19c" }]
+  },
+  {
+    featureType: "transit",
+    elementType: "geometry",
+    stylers: [{ color: "#2f3948" }]
+  },
+  {
+    featureType: "transit.station",
+    elementType: "labels.text.fill",
+    stylers: [{ color: "#d59563" }]
+  },
+  {
+    featureType: "water",
+    elementType: "geometry",
+    stylers: [{ color: "#17263c" }]
+  },
+  {
+    featureType: "water",
+    elementType: "labels.text.fill",
+    stylers: [{ color: "#515c6d" }]
+  },
+  {
+    featureType: "water",
+    elementType: "labels.text.stroke",
+    stylers: [{ color: "#17263c" }]
+  }
+];
 
 // Helper to decode Google's encoded polyline algorithm format
 function decodePolyline(encoded) {
@@ -137,7 +219,16 @@ function getStopColor(role, index) {
   return middleColors[index % middleColors.length];
 }
 
-export default function GoogleMapPanel({ wishlist = [], activeRoute = null, onAddWishlist, onUpdatePlaceName, onShowWeather }) {
+export default function GoogleMapPanel({ 
+  wishlist = [], 
+  destinations = [], 
+  activeRoute = null, 
+  onAddWishlist, 
+  onUpdatePlaceName, 
+  onShowWeather,
+  userCoords: propUserCoords = null,
+  onUpdateUserCoords = null
+}) {
   const mapRef = useRef(null);
   
   // API Key state: automatically resolves from env or localStorage
@@ -151,7 +242,16 @@ export default function GoogleMapPanel({ wishlist = [], activeRoute = null, onAd
   const [activeLayer, setActiveLayer] = useState('street'); // street or satellite
   const [isSearching, setIsSearching] = useState(false);
   const [routeInfo, setRouteInfo] = useState({ distance: '', duration: '' });
-  const [userCoords, setUserCoords] = useState(null);
+  
+  const { isDarkMode } = useThemeStore();
+  const [localUserCoords, setLocalUserCoords] = useState(null);
+  const userCoords = propUserCoords || localUserCoords;
+  const setUserCoords = (coords) => {
+    setLocalUserCoords(coords);
+    if (onUpdateUserCoords) {
+      onUpdateUserCoords(coords);
+    }
+  };
   const [predictions, setPredictions] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [hoverTooltip, setHoverTooltip] = useState({
@@ -256,7 +356,10 @@ export default function GoogleMapPanel({ wishlist = [], activeRoute = null, onAd
           mapTypeId: activeLayer === 'satellite' ? 'hybrid' : 'roadmap',
           gestureHandling: 'cooperative',
           rotateControl: true,
-          tiltControl: true
+          tiltControl: true,
+          mapId: 'DEMO_MAP_ID',
+          renderingType: 'VECTOR',
+          styles: isDarkMode ? DARK_MAP_STYLES : []
         });
         
         mapInstanceRef.current = map;
@@ -344,19 +447,20 @@ export default function GoogleMapPanel({ wishlist = [], activeRoute = null, onAd
             const inputPlaceholder = isNameValid ? "Edit place name..." : "Enter place name...";
 
             const popupDiv = document.createElement('div');
-            popupDiv.className = 'p-3 space-y-2 text-slate-800 text-left min-w-[180px]';
+            popupDiv.className = 'p-3 space-y-2 text-slate-800 dark:text-white text-left min-w-[180px]';
             popupDiv.innerHTML = `
               <div class="space-y-1">
-                <label class="text-[9px] font-black uppercase text-gray-400">Place Name</label>
-                <input id="gmap-input-place-name" type="text" value="${displayValue}" placeholder="${inputPlaceholder}" class="w-full px-2 py-1 border border-gray-300 rounded text-xs focus:ring-1 focus:ring-violet-500 font-semibold" />
+                <label class="text-[9px] font-black uppercase text-gray-400 dark:text-gray-300">Place Name</label>
+                <input id="gmap-input-place-name" type="text" value="${displayValue}" placeholder="${inputPlaceholder}" class="w-full px-2 py-1 border border-gray-300 dark:border-violet-850 rounded text-xs focus:ring-1 focus:ring-violet-500 font-semibold text-slate-800 dark:text-white bg-white dark:bg-slate-900" />
               </div>
-              <p class="text-[9px] text-gray-500 font-semibold">State: ${state}</p>
-              <button id="gmap-btn-add-click" class="w-full px-2 py-1.5 bg-violet-600 hover:bg-violet-700 text-white font-extrabold text-[10px] rounded-lg cursor-pointer transition-all shadow-sm">
+              <p class="text-[9px] text-gray-500 dark:text-gray-400 font-semibold">State: ${state}</p>
+              <button id="gmap-btn-add-click" class="w-full px-2 py-1.5 bg-violet-650 hover:bg-violet-750 text-white font-extrabold text-[10px] rounded-lg cursor-pointer transition-all shadow-sm">
                 + Add to Wishlist
               </button>
               <button id="gmap-btn-weather-click" class="w-full px-2 py-1.5 mt-1 bg-sky-500 hover:bg-sky-600 text-white font-extrabold text-[10px] rounded-lg cursor-pointer transition-all shadow-sm">
-                🌤️ View Weather
+                Show the current weather
               </button>
+              <div id="gmap-weather-display" class="hidden text-xs font-black text-sky-600 dark:text-sky-400 text-center py-1 mt-1"></div>
             `;
 
             // Update content directly (InfoWindow is already open)
@@ -366,6 +470,7 @@ export default function GoogleMapPanel({ wishlist = [], activeRoute = null, onAd
               const btn = document.getElementById('gmap-btn-add-click');
               const input = document.getElementById('gmap-input-place-name');
               const weatherBtn = document.getElementById('gmap-btn-weather-click');
+              const weatherDisplay = document.getElementById('gmap-weather-display');
               if (input) {
                 input.focus();
               }
@@ -392,11 +497,33 @@ export default function GoogleMapPanel({ wishlist = [], activeRoute = null, onAd
                   }
                 };
               }
-              if (weatherBtn && onShowWeather) {
-                weatherBtn.onclick = () => {
-                  const finalPlaceName = input ? input.value.trim() : "";
-                  onShowWeather(finalPlaceName || placeName);
-                  if (infoWindowRef.current) infoWindowRef.current.close();
+              if (weatherBtn) {
+                weatherBtn.onclick = async () => {
+                  weatherBtn.disabled = true;
+                  weatherBtn.innerText = "Loading...";
+                  try {
+                    const openWeatherKey = import.meta.env.VITE_OPENWEATHER_API_KEY;
+                    const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lng}&units=metric&appid=${openWeatherKey}`);
+                    if (response.ok) {
+                      const data = await response.json();
+                      if (data && data.main) {
+                        const tempC = Math.round(data.main.temp);
+                        weatherDisplay.innerText = `${tempC}°C`;
+                        weatherDisplay.classList.remove('hidden');
+                        weatherBtn.classList.add('hidden');
+                      } else {
+                        weatherBtn.innerText = "Weather unavailable";
+                        weatherBtn.disabled = false;
+                      }
+                    } else {
+                      weatherBtn.innerText = "Weather unavailable";
+                      weatherBtn.disabled = false;
+                    }
+                  } catch (err) {
+                    console.error("Failed to fetch weather in InfoWindow", err);
+                    weatherBtn.innerText = "Weather unavailable";
+                    weatherBtn.disabled = false;
+                  }
                 };
               }
             }, 200);
@@ -543,6 +670,15 @@ export default function GoogleMapPanel({ wishlist = [], activeRoute = null, onAd
 
   }, [googleMapsLoaded, onAddWishlist]);
 
+  // Dynamic Map Theme Style updates
+  useEffect(() => {
+    if (mapInstanceRef.current && window.google && window.google.maps) {
+      mapInstanceRef.current.setOptions({
+        styles: isDarkMode ? DARK_MAP_STYLES : []
+      });
+    }
+  }, [isDarkMode, googleMapsLoaded]);
+
   // Autocomplete service initialization
   useEffect(() => {
     if (!googleMapsLoaded || !window.google || !window.google.maps || !window.google.maps.places) return;
@@ -577,6 +713,109 @@ export default function GoogleMapPanel({ wishlist = [], activeRoute = null, onAd
   }, [searchQuery]);
 
   const handleSelectPrediction = (prediction) => {
+    if (prediction.isLocal && prediction.lat && prediction.lng) {
+      setSearchQuery(prediction.description);
+      setPredictions([]);
+      setShowDropdown(false);
+
+      if (!window.google || !mapInstanceRef.current) return;
+      const lat = prediction.lat;
+      const lng = prediction.lng;
+      const placeName = prediction.name;
+      const state = prediction.state || "Unknown";
+      const displayName = `${placeName}, ${state}, India`;
+
+      const map = mapInstanceRef.current;
+      map.setCenter({ lat, lng });
+      setTimeout(() => {
+        map.setZoom(14); // zoom in closer for perfect fit!
+      }, 150);
+
+      if (tempMarkerRef.current) {
+        tempMarkerRef.current.setMap(null);
+      }
+
+      const tempMarker = new window.google.maps.Marker({
+        position: { lat, lng },
+        map: map,
+        title: placeName
+      });
+      tempMarkerRef.current = tempMarker;
+
+      const popupDiv = document.createElement('div');
+      popupDiv.className = 'p-3 space-y-2 text-slate-800 dark:text-white text-left min-w-[180px]';
+      popupDiv.innerHTML = `
+        <div class="space-y-1">
+          <label class="text-[9px] font-black uppercase text-gray-400 dark:text-gray-300">Place Name</label>
+          <input id="gmap-input-search-name" type="text" value="${placeName}" class="w-full px-2 py-1 border border-gray-300 dark:border-violet-850 rounded text-xs focus:ring-1 focus:ring-violet-500 font-semibold text-slate-800 dark:text-white bg-white dark:bg-slate-900" />
+        </div>
+        <p class="text-[9px] text-gray-500 dark:text-gray-400 font-medium">${state}</p>
+        <button id="gmap-btn-add-search" class="w-full px-2 py-1.5 bg-violet-650 hover:bg-violet-750 text-white font-extrabold text-[10px] rounded-lg cursor-pointer transition-all shadow-sm">
+          + Add to Wishlist
+        </button>
+        <button id="gmap-btn-weather-search" class="w-full px-2 py-1.5 mt-1 bg-sky-500 hover:bg-sky-600 text-white font-extrabold text-[10px] rounded-lg cursor-pointer transition-all shadow-sm">
+          Show the current weather
+        </button>
+        <div id="gmap-weather-search-display" class="hidden text-xs font-black text-sky-600 dark:text-sky-400 text-center py-1 mt-1"></div>
+      `;
+
+      if (infoWindowRef.current) infoWindowRef.current.close();
+      infoWindowRef.current.setContent(popupDiv);
+      infoWindowRef.current.open(map, tempMarker);
+
+      setTimeout(() => {
+        const btn = document.getElementById('gmap-btn-add-search');
+        const input = document.getElementById('gmap-input-search-name');
+        const weatherBtn = document.getElementById('gmap-btn-weather-search');
+        const weatherDisplay = document.getElementById('gmap-weather-search-display');
+        if (btn && onAddWishlist) {
+          btn.onclick = async () => {
+            const finalPlaceName = input ? input.value.trim() : placeName;
+            await onAddWishlist({
+              placeName: finalPlaceName,
+              state,
+              category: prediction.category || 'Sight',
+              lat,
+              lng
+            });
+            tempMarker.setMap(null);
+            tempMarkerRef.current = null;
+            infoWindowRef.current.close();
+          };
+        }
+        if (weatherBtn) {
+          weatherBtn.onclick = async () => {
+            weatherBtn.disabled = true;
+            weatherBtn.innerText = "Loading...";
+            try {
+              const openWeatherKey = import.meta.env.VITE_OPENWEATHER_API_KEY;
+              const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lng}&units=metric&appid=${openWeatherKey}`);
+              if (response.ok) {
+                const data = await response.json();
+                if (data && data.main) {
+                  const tempC = Math.round(data.main.temp);
+                  weatherDisplay.innerText = `${tempC}°C`;
+                  weatherDisplay.classList.remove('hidden');
+                  weatherBtn.classList.add('hidden');
+                } else {
+                  weatherBtn.innerText = "Weather unavailable";
+                  weatherBtn.disabled = false;
+                }
+              } else {
+                weatherBtn.innerText = "Weather unavailable";
+                weatherBtn.disabled = false;
+              }
+            } catch (err) {
+              console.error("Failed to fetch weather in InfoWindow", err);
+              weatherBtn.innerText = "Weather unavailable";
+              weatherBtn.disabled = false;
+            }
+          };
+        }
+      }, 200);
+      return;
+    }
+
     setSearchQuery(prediction.description);
     setPredictions([]);
     setShowDropdown(false);
@@ -622,19 +861,20 @@ export default function GoogleMapPanel({ wishlist = [], activeRoute = null, onAd
         tempMarkerRef.current = tempMarker;
 
         const popupDiv = document.createElement('div');
-        popupDiv.className = 'p-3 space-y-2 text-slate-800 text-left min-w-[180px]';
+        popupDiv.className = 'p-3 space-y-2 text-slate-800 dark:text-white text-left min-w-[180px]';
         popupDiv.innerHTML = `
           <div class="space-y-1">
-            <label class="text-[9px] font-black uppercase text-gray-400">Place Name</label>
-            <input id="gmap-input-search-name" type="text" value="${placeName}" class="w-full px-2 py-1 border border-gray-300 rounded text-xs focus:ring-1 focus:ring-violet-500 font-semibold" />
+            <label class="text-[9px] font-black uppercase text-gray-400 dark:text-gray-300">Place Name</label>
+            <input id="gmap-input-search-name" type="text" value="${placeName}" class="w-full px-2 py-1 border border-gray-300 dark:border-violet-850 rounded text-xs focus:ring-1 focus:ring-violet-500 font-semibold text-slate-800 dark:text-white bg-white dark:bg-slate-900" />
           </div>
-          <p class="text-[9px] text-gray-500 font-medium">${displayName.split(',').slice(1, 4).join(',')}</p>
-          <button id="gmap-btn-add-search" class="w-full px-2 py-1.5 bg-violet-600 hover:bg-violet-700 text-white font-extrabold text-[10px] rounded-lg cursor-pointer transition-all shadow-sm">
+          <p class="text-[9px] text-gray-500 dark:text-gray-400 font-medium">${displayName.split(',').slice(1, 4).join(',')}</p>
+          <button id="gmap-btn-add-search" class="w-full px-2 py-1.5 bg-violet-650 hover:bg-violet-750 text-white font-extrabold text-[10px] rounded-lg cursor-pointer transition-all shadow-sm">
             + Add to Wishlist
           </button>
           <button id="gmap-btn-weather-search" class="w-full px-2 py-1.5 mt-1 bg-sky-500 hover:bg-sky-600 text-white font-extrabold text-[10px] rounded-lg cursor-pointer transition-all shadow-sm">
-            🌤️ View Weather
+            Show the current weather
           </button>
+          <div id="gmap-weather-search-display" class="hidden text-xs font-black text-sky-600 dark:text-sky-400 text-center py-1 mt-1"></div>
         `;
 
         if (infoWindowRef.current) infoWindowRef.current.close();
@@ -645,6 +885,7 @@ export default function GoogleMapPanel({ wishlist = [], activeRoute = null, onAd
           const btn = document.getElementById('gmap-btn-add-search');
           const input = document.getElementById('gmap-input-search-name');
           const weatherBtn = document.getElementById('gmap-btn-weather-search');
+          const weatherDisplay = document.getElementById('gmap-weather-search-display');
           if (btn && onAddWishlist) {
             btn.onclick = async () => {
               const finalPlaceName = input ? input.value.trim() : placeName;
@@ -668,11 +909,33 @@ export default function GoogleMapPanel({ wishlist = [], activeRoute = null, onAd
               }
             };
           }
-          if (weatherBtn && onShowWeather) {
-            weatherBtn.onclick = () => {
-              const finalPlaceName = input ? input.value.trim() : placeName;
-              onShowWeather(finalPlaceName);
-              if (infoWindowRef.current) infoWindowRef.current.close();
+          if (weatherBtn) {
+            weatherBtn.onclick = async () => {
+              weatherBtn.disabled = true;
+              weatherBtn.innerText = "Loading...";
+              try {
+                const openWeatherKey = import.meta.env.VITE_OPENWEATHER_API_KEY;
+                const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lng}&units=metric&appid=${openWeatherKey}`);
+                if (response.ok) {
+                  const data = await response.json();
+                  if (data && data.main) {
+                    const tempC = Math.round(data.main.temp);
+                    weatherDisplay.innerText = `${tempC}°C`;
+                    weatherDisplay.classList.remove('hidden');
+                    weatherBtn.classList.add('hidden');
+                  } else {
+                    weatherBtn.innerText = "Weather unavailable";
+                    weatherBtn.disabled = false;
+                  }
+                } else {
+                  weatherBtn.innerText = "Weather unavailable";
+                  weatherBtn.disabled = false;
+                }
+              } catch (err) {
+                console.error("Failed to fetch weather in InfoWindow", err);
+                weatherBtn.innerText = "Weather unavailable";
+                weatherBtn.disabled = false;
+              }
             };
           }
         }, 150);
@@ -1234,7 +1497,9 @@ export default function GoogleMapPanel({ wishlist = [], activeRoute = null, onAd
         
         const polyBounds = new window.google.maps.LatLngBounds();
         pathCoords.forEach(coord => polyBounds.extend(coord));
-        map.fitBounds(polyBounds, 80);
+        setTimeout(() => {
+          map.fitBounds(polyBounds, 50);
+        }, 150);
 
         // Calculate distance and duration if not already set by backend
         if (!activeRoute.totalDistance || !activeRoute.totalDuration) {
@@ -1280,7 +1545,9 @@ export default function GoogleMapPanel({ wishlist = [], activeRoute = null, onAd
 
               const polyBounds = new window.google.maps.LatLngBounds();
               roadCoords.forEach(coord => polyBounds.extend(coord));
-              map.fitBounds(polyBounds, 80);
+              setTimeout(() => {
+                map.fitBounds(polyBounds, 50);
+              }, 150);
 
               const osrmDistance = data.routes[0].distance;
               const osrmDuration = data.routes[0].duration;
@@ -1321,7 +1588,9 @@ export default function GoogleMapPanel({ wishlist = [], activeRoute = null, onAd
 
                 const polyBounds = new window.google.maps.LatLngBounds();
                 googleCoords.forEach(coord => polyBounds.extend(coord));
-                map.fitBounds(polyBounds, 80);
+                setTimeout(() => {
+                  map.fitBounds(polyBounds, 50);
+                }, 150);
 
                 let totalDistMeters = 0;
                 let totalDurSeconds = 0;
@@ -1347,12 +1616,14 @@ export default function GoogleMapPanel({ wishlist = [], activeRoute = null, onAd
     } else {
       setRouteInfo({ distance: '', duration: '' });
       if (hasValidBounds) {
-        if (wishlist.length === 1) {
-          map.setCenter(bounds.getCenter());
-          map.setZoom(12);
-        } else {
-          map.fitBounds(bounds, 80);
-        }
+        setTimeout(() => {
+          if (wishlist.length === 1) {
+            map.setCenter(bounds.getCenter());
+            map.setZoom(14);
+          } else {
+            map.fitBounds(bounds, 50);
+          }
+        }, 150);
       }
     }
 
@@ -1381,7 +1652,7 @@ export default function GoogleMapPanel({ wishlist = [], activeRoute = null, onAd
 
     setIsSearching(true);
     
-    const handleGeocodeResult = (result) => {
+    const handleGeocodeResult = async (result) => {
       const lat = typeof result.geometry.location.lat === 'function' ? result.geometry.location.lat() : result.geometry.location.lat;
       const lng = typeof result.geometry.location.lng === 'function' ? result.geometry.location.lng() : result.geometry.location.lng;
       const displayName = result.formatted_address;
@@ -1407,21 +1678,74 @@ export default function GoogleMapPanel({ wishlist = [], activeRoute = null, onAd
         tempMarkerRef.current.setMap(null);
       }
 
-      const tempMarker = new window.google.maps.Marker({
-        position: { lat, lng },
-        map: map,
-        title: placeName
-      });
+      // Asynchronous fetch call to OWM using coordinates
+      let temp = null;
+      let stationName = placeName;
+      let humidity = null;
+      let description = 'Clear sky';
+      
+      const openWeatherKey = import.meta.env.VITE_OPENWEATHER_API_KEY;
+      try {
+        const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lng}&units=metric&appid=${openWeatherKey}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data && data.main) {
+            temp = data.main.temp;
+            humidity = data.main.humidity;
+          }
+          if (data && data.name) {
+            stationName = data.name;
+          }
+          if (data && data.weather && data.weather[0]) {
+            description = data.weather[0].description;
+          }
+        }
+      } catch (err) {
+        console.error("Direct OWM coordinates fetch failed:", err);
+      }
+
+      // Create marker using AdvancedMarkerElement
+      let tempMarker;
+      if (window.google && window.google.maps && window.google.maps.marker && window.google.maps.marker.AdvancedMarkerElement) {
+        tempMarker = new window.google.maps.marker.AdvancedMarkerElement({
+          position: { lat, lng },
+          map: map,
+          title: placeName
+        });
+      } else {
+        tempMarker = new window.google.maps.Marker({
+          position: { lat, lng },
+          map: map,
+          title: placeName
+        });
+      }
       tempMarkerRef.current = tempMarker;
 
       const popupDiv = document.createElement('div');
       popupDiv.className = 'p-3 space-y-2 text-slate-800 text-left min-w-[180px]';
+      
+      let weatherHtml = '';
+      if (temp !== null) {
+        weatherHtml = `
+          <div class="p-2 rounded bg-sky-50 border border-sky-100 space-y-0.5 my-1">
+            <p class="text-[9px] font-black uppercase text-sky-655 tracking-wide">🌤️ Local Climate Snapshot</p>
+            <div class="flex justify-between items-center text-xs">
+              <span class="font-bold text-slate-700 truncate max-w-[100px]">${stationName}</span>
+              <span class="font-black text-orange-600">${Math.round(temp)}°C</span>
+            </div>
+            <p class="text-[9px] text-slate-500 capitalize italic leading-none">"${description}"</p>
+            <p class="text-[8px] text-slate-400">Humidity: ${humidity}%</p>
+          </div>
+        `;
+      }
+
       popupDiv.innerHTML = `
         <div class="space-y-1">
           <label class="text-[9px] font-black uppercase text-gray-400">Place Name</label>
           <input id="gmap-input-search-name" type="text" value="${placeName}" class="w-full px-2 py-1 border border-gray-300 rounded text-xs focus:ring-1 focus:ring-violet-500 font-semibold" />
         </div>
         <p class="text-[9px] text-gray-500 font-medium">${displayName.split(',').slice(1, 4).join(',')}</p>
+        ${weatherHtml}
         <button id="gmap-btn-add-search" class="w-full px-2 py-1.5 bg-violet-600 hover:bg-violet-700 text-white font-extrabold text-[10px] rounded-lg cursor-pointer transition-all shadow-sm">
           + Add to Wishlist
         </button>
@@ -1668,6 +1992,37 @@ export default function GoogleMapPanel({ wishlist = [], activeRoute = null, onAd
     window.location.reload();
   };
 
+  // Match suggestions from local seed destinations
+  const localMatches = searchQuery.trim() 
+    ? destinations.filter(d => 
+        (d.name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (d.city || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (d.state || "").toLowerCase().includes(searchQuery.toLowerCase())
+      ).slice(0, 5)
+    : [];
+
+  const combinedSuggestions = [
+    ...localMatches.map(m => ({
+      place_id: `local-${m.id || m.name}`,
+      description: `${m.name}, ${m.state}`,
+      isLocal: true,
+      name: m.name,
+      state: m.state,
+      category: m.category,
+      lat: m.lat,
+      lng: m.lng,
+      mainText: m.name,
+      secondaryText: `${m.city ? m.city + ', ' : ''}${m.state}`
+    })),
+    ...predictions.map(p => ({
+      place_id: p.place_id,
+      description: p.description,
+      isLocal: false,
+      mainText: p.structured_formatting.main_text,
+      secondaryText: p.structured_formatting.secondary_text
+    }))
+  ];
+
   return (
     <GlassCard className="p-4 bg-white/[0.04] space-y-4 border-white/[0.08] relative">
       {/* Top Map Controls */}
@@ -1713,17 +2068,22 @@ export default function GoogleMapPanel({ wishlist = [], activeRoute = null, onAd
             )}
 
             {/* Autocomplete Predictions Dropdown */}
-            {showDropdown && predictions.length > 0 && (
+            {showDropdown && combinedSuggestions.length > 0 && (
               <div className="absolute top-full left-0 right-0 mt-1 bg-slate-950/95 border border-white/10 rounded-lg shadow-2xl max-h-60 overflow-y-auto z-[999] text-left text-xs divide-y divide-white/5 backdrop-blur-md">
-                {predictions.map((p) => (
+                {combinedSuggestions.map((s) => (
                   <button
-                    key={p.place_id}
+                    key={s.place_id}
                     type="button"
-                    onClick={() => handleSelectPrediction(p)}
+                    onClick={() => handleSelectPrediction(s)}
                     className="w-full px-3 py-2 text-white/80 hover:bg-violet-950/45 text-left font-medium transition-all focus:outline-none"
                   >
-                    <p className="font-semibold text-white">{p.structured_formatting.main_text}</p>
-                    <p className="text-[10px] text-white/40 truncate">{p.structured_formatting.secondary_text}</p>
+                    <p className="font-semibold text-white flex items-center justify-between gap-1.5">
+                      <span>{s.mainText}</span>
+                      {s.isLocal && (
+                        <span className="text-[7.5px] px-1 py-0.2 rounded bg-violet-500/20 text-violet-300 font-black uppercase tracking-wider scale-90">Sight</span>
+                      )}
+                    </p>
+                    <p className="text-[10px] text-white/40 truncate">{s.secondaryText}</p>
                   </button>
                 ))}
               </div>
@@ -1735,7 +2095,7 @@ export default function GoogleMapPanel({ wishlist = [], activeRoute = null, onAd
       {/* Map Display / Key Input Workspace Wrapper */}
       <div 
         id="google-map-container"
-        className="w-full h-[350px] md:h-[calc(100vh-240px)] md:min-h-[550px] rounded-xl overflow-hidden border border-white/10 shadow-inner bg-slate-900/60 relative z-10 flex items-center justify-center"
+        className="w-full h-[350px] md:h-[calc(100vh-240px)] md:min-h-[550px] rounded-xl overflow-hidden border border-slate-200 dark:border-white/10 shadow-inner bg-slate-100/60 dark:bg-slate-900/60 relative z-10 flex items-center justify-center"
       >
         {/* Map Canvas Div - Google Maps will replace contents of this div only */}
         {apiKey && (
@@ -1864,12 +2224,13 @@ export default function GoogleMapPanel({ wishlist = [], activeRoute = null, onAd
               </div>
             )}
 
-            {/* Custom Zoom & Rotate Dock Overlay (Positioned vertically on the right side) */}
+            {/* Custom Zoom, Rotate, & Locate Me Dock Overlay (Positioned vertically on the right side) */}
             {googleMapsLoaded && (
               <div 
                 className="absolute right-4 top-1/2 -translate-y-1/2 z-[1000] flex flex-col gap-1.5 bg-slate-950/85 border border-white/10 p-1.5 rounded-xl shadow-2xl backdrop-blur-md"
                 style={{ zIndex: 1000 }}
               >
+                {/* Zoom In */}
                 <button
                   type="button"
                   onClick={handleZoomIn}
@@ -1878,6 +2239,8 @@ export default function GoogleMapPanel({ wishlist = [], activeRoute = null, onAd
                 >
                   <Plus className="w-4 h-4" />
                 </button>
+
+                {/* Zoom Out */}
                 <button
                   type="button"
                   onClick={handleZoomOut}
@@ -1886,37 +2249,29 @@ export default function GoogleMapPanel({ wishlist = [], activeRoute = null, onAd
                 >
                   <Minus className="w-4 h-4" />
                 </button>
+
                 <div className="h-px bg-white/10 my-0.5" />
+
+                {/* Locate Me (Current Location) */}
+                <button
+                  type="button"
+                  onClick={handleLocateMe}
+                  title="Find My Location"
+                  className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 text-violet-400 flex items-center justify-center hover:bg-white/10 hover:text-violet-300 transition-all cursor-pointer font-bold"
+                >
+                  <Navigation className="w-4 h-4 rotate-[45deg]" />
+                </button>
+
+                {/* Rotate Map */}
                 <button
                   type="button"
                   onClick={handleRotateMap}
-                  title="Rotate Map (90° - Hybrid/Satellite Only)"
+                  title="Rotate Map (90°)"
                   className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 text-white flex items-center justify-center hover:bg-white/10 hover:text-white transition-all cursor-pointer text-xs font-bold"
                 >
                   🔄
                 </button>
-                <button
-                  type="button"
-                  onClick={handleTiltMap}
-                  title="Toggle 3D Tilt (Hybrid/Satellite Only)"
-                  className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 text-white flex items-center justify-center hover:bg-white/10 hover:text-white transition-all cursor-pointer text-xs font-bold"
-                >
-                  📐
-                </button>
               </div>
-            )}
-
-            {/* Floating Locate Me circular button (FAB style) */}
-            {googleMapsLoaded && (
-              <button
-                type="button"
-                onClick={handleLocateMe}
-                title="Find My Location"
-                className="absolute bottom-4 right-4 z-[1000] w-11 h-11 rounded-full bg-gradient-to-tr from-violet-600 to-indigo-600 text-white flex items-center justify-center hover:from-violet-550 hover:to-indigo-550 active:scale-95 transition-all shadow-2xl cursor-pointer border border-white/20"
-                style={{ zIndex: 1000 }}
-              >
-                <span className="text-lg">🎯</span>
-              </button>
             )}
           </>
         )}

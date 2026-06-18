@@ -64,7 +64,7 @@ export default function Features() {
           {FEATURE_LIST.map((feat) => (
             <div 
               key={feat.title}
-              className="clay-card p-6 md:p-8 bg-white/80 dark:bg-slate-900/60 text-left hover:-translate-y-1.5 transition-transform duration-300 group"
+              className="clay-card clay-card-hover p-6 md:p-8 bg-white/80 dark:bg-slate-900/60 text-left group"
             >
               <div className={`w-12 h-12 rounded-2xl ${feat.bg} flex items-center justify-center shadow-sm mb-6 group-hover:scale-105 transition-transform`}>
                 {feat.icon}

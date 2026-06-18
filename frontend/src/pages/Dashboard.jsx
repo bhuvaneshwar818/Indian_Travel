@@ -16,8 +16,11 @@ import GroupChat from '../components/dashboard/GroupChat'
 import IndiaInteractiveMap from '../components/map/IndiaInteractiveMap'
 import GoogleMapPanel from '../components/map/GoogleMapPanel'
 import WishlistPanel from '../components/wishlist/WishlistPanel'
+import { useThemeStore } from '../store/themeStore'
+import { useToastStore } from '../store/useToastStore'
+import { indianTravelData } from '../lib/indianTravelData'
 import { 
-  Home, Map, Heart, Compass, MessageSquare, Wallet, Sun, Languages, 
+  Home, Map, Heart, Compass, MessageSquare, Wallet, Sun, Moon, Languages, 
   Settings, LogOut, Bell, Menu, X, ArrowLeft, Star, Plus, CheckCircle2, ChevronRight 
 } from 'lucide-react'
 import { AnimatePresence } from 'framer-motion'
@@ -36,6 +39,12 @@ export default function Dashboard() {
   const { destinations, fetchDestinations, addBookmark, bookmarks, fetchBookmarks } = useLegacyTripStore();
 
   const navigate = useNavigate();
+  const { addToast } = useToastStore();
+  const [addingWishlistId, setAddingWishlistId] = useState(null);
+  
+  // Theme states
+  const { isDarkMode, toggleTheme, initTheme } = useThemeStore();
+  const [userCoords, setUserCoords] = useState(null);
   
   // Layout states
   const [activeSection, setActiveSection] = useState('dashboard'); // dashboard, map, wishlist, route, chat, budget, weather, translator
@@ -44,8 +53,28 @@ export default function Dashboard() {
   const [rightPanelOpen, setRightPanelOpen] = useState(true);
   const [activeRoutePolyline, setActiveRoutePolyline] = useState(null);
   const [weatherSelectedCity, setWeatherSelectedCity] = useState(null);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
 
-  // Map Filter states
+  // Initialize theme and fetch initial user coordinates
+  useEffect(() => {
+    if (initTheme) initTheme();
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setUserCoords({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          });
+        },
+        (err) => {
+          console.warn("Dashboard initial geolocation failed:", err);
+        },
+        { timeout: 8000 }
+      );
+    }
+  }, [initTheme]);
+
+  // Auto Onboarding trigger states
   const [selectedState, setSelectedState] = useState('Goa');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -75,6 +104,28 @@ export default function Dashboard() {
   };
 
   const handleAddWishlist = async (dest) => {
+    const destName = (dest.name || dest.placeName || "").trim().toLowerCase();
+    
+    // Check if the place belongs to the custom indianTravelData dataset
+    const isCustomPlace = indianTravelData.some(stateObj => 
+      stateObj.places && stateObj.places.some(place => 
+        (place.name || "").trim().toLowerCase() === destName
+      )
+    );
+
+    if (isCustomPlace) {
+      const isAlreadyInWishlist = wishlist.some(item => 
+        (item.placeName || "").trim().toLowerCase() === destName
+      );
+      if (isAlreadyInWishlist) {
+        addToast("already added", "warning");
+        return;
+      }
+    }
+
+    const toastTargetName = dest.name || dest.placeName;
+    setAddingWishlistId(dest.id || destName);
+
     let lat = dest.lat;
     let lng = dest.lng;
 
@@ -133,8 +184,12 @@ export default function Dashboard() {
         lat,
         lng
       );
+      addToast(`${toastTargetName} added to wishlist!`, "success");
     } catch (e) {
       console.error("Failed to add to wishlist", e);
+      addToast(`Failed to add ${toastTargetName} to wishlist.`, "error");
+    } finally {
+      setAddingWishlistId(null);
     }
   };
 
@@ -170,10 +225,37 @@ export default function Dashboard() {
     }
   };
 
+  // Helper to map place types to UI category IDs
+  const mapTypeToCategoryId = (type) => {
+    const t = (type || "").toLowerCase();
+    if (t.includes("beach")) return "Beaches";
+    if (t.includes("historic") || t.includes("heritage") || t.includes("monument") || t.includes("culture")) return "Historical";
+    if (t.includes("spirit") || t.includes("temple")) return "Temples";
+    if (t.includes("adventure") || t.includes("nature") || t.includes("hill") || t.includes("wildlife")) return "Adventure";
+    if (t.includes("food") || t.includes("culinary")) return "Food";
+    return "all";
+  };
 
   const filteredPlaces = destinations.filter(p => 
     p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     p.description.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const mapStateObj = indianTravelData.find(st => st.state.toLowerCase() === selectedState.toLowerCase());
+  const mapPlacesRaw = mapStateObj ? mapStateObj.places : [];
+  
+  const mapSights = mapPlacesRaw.map((p, idx) => ({
+    id: `local-${selectedState.replace(/\s+/g, '-')}-${idx}`,
+    name: p.name,
+    category: mapTypeToCategoryId(p.type), // Map to the exact category ID
+    description: p.info,
+    imageUrl: p.image,
+    rating: 4.8,
+    state: selectedState,
+    city: p.name.split(' ')[0].replace(/[()]/g, '')
+  })).filter(p => 
+    (selectedCategory === 'all' || p.category === selectedCategory) &&
+    (p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.description.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   const categories = [
@@ -227,13 +309,41 @@ export default function Dashboard() {
               IndianTravel<span className="text-violet-400">AI</span>
             </span>
           </Link>
+
+          {/* Desktop header Navigation Menu placed beside the logo */}
+          <nav className="hidden lg:flex items-center gap-1.5 ml-4 pl-4 border-l border-white/10">
+            {[
+              { id: 'dashboard', label: 'Home', icon: <Home className="w-3.5 h-3.5" /> },
+              { id: 'map', label: 'Interactive Map', icon: <Map className="w-3.5 h-3.5" /> },
+              { id: 'route', label: 'Find Route', icon: <Compass className="w-3.5 h-3.5" /> },
+              { id: 'weather', label: 'Weather Forecast', icon: <Sun className="w-3.5 h-3.5" /> },
+              { id: 'translator', label: 'Language Translator', icon: <Languages className="w-3.5 h-3.5" /> },
+              { id: 'budget', label: 'Budget Tracker', icon: <Wallet className="w-3.5 h-3.5" /> }
+            ].map((item) => {
+              const isActive = activeSection === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveSection(item.id)}
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-[11px] font-bold transition-all cursor-pointer ${
+                    isActive 
+                      ? 'bg-violet-600/25 border border-violet-500/35 text-white shadow-md' 
+                      : 'text-white/60 hover:bg-white/5 hover:text-white'
+                  }`}
+                >
+                  {item.icon}
+                  <span>{item.label}</span>
+                </button>
+              );
+            })}
+          </nav>
         </div>
 
         {/* Dynamic header info */}
         <div className="flex items-center gap-2 sm:gap-4 shrink-0">
           <button 
             onClick={() => setRightPanelOpen(!rightPanelOpen)}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-1.5 rounded-xl bg-violet-600/20 border border-violet-500/35 text-[10px] font-bold text-violet-300 transition-all hover:bg-violet-600/30"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-1.5 rounded-xl bg-violet-600/20 border border-violet-500/35 text-[10px] font-bold text-violet-300 transition-all hover:bg-violet-600/30 cursor-pointer"
           >
             <Heart className="w-3.5 h-3.5 fill-violet-400" />
             <span className="hidden sm:inline">Wishlist Panel</span>
@@ -246,12 +356,88 @@ export default function Dashboard() {
 
           <div className="h-4 w-px bg-white/10 hidden sm:block" />
 
-          {/* User Account Avatar bubble */}
-          <div className="flex items-center gap-2 shrink-0">
-            <div className="w-8 h-8 rounded-full bg-violet-650/20 border border-violet-900/35 text-violet-300 font-bold text-xs flex items-center justify-center">
+          {/* User Account Avatar bubble & Settings dropdown menu */}
+          <div className="relative flex items-center gap-2 shrink-0">
+            {/* Logo/Avatar button */}
+            <button 
+              onClick={() => setProfileMenuOpen(!profileMenuOpen)}
+              className="w-8 h-8 rounded-full bg-violet-650/20 border border-violet-900/35 text-violet-300 font-bold text-xs flex items-center justify-center hover:bg-violet-650/30 transition-colors cursor-pointer"
+              title="User profile settings"
+            >
               {user?.fullName?.charAt(0) || 'T'}
-            </div>
-            <span className="text-xs font-bold text-white/80 hidden md:inline">{user?.fullName || "Traveler"}</span>
+            </button>
+
+            {/* Gearing icon button beside it */}
+            <button 
+              onClick={() => setProfileMenuOpen(!profileMenuOpen)}
+              className="w-8 h-8 rounded-xl flex items-center justify-center border border-white/10 bg-white/5 text-white/80 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
+              title="Settings & theme"
+            >
+              <Settings className="w-4 h-4" />
+            </button>
+
+            {/* Dropdown Menu */}
+            {profileMenuOpen && (
+              <>
+                <div 
+                  onClick={() => setProfileMenuOpen(false)}
+                  className="fixed inset-0 z-40 bg-transparent"
+                />
+                <div className="absolute right-0 top-full mt-2 w-56 rounded-xl bg-slate-950/95 border border-white/10 backdrop-blur-md p-1.5 shadow-2xl z-50 text-left animate-fadeIn">
+                  <div className="px-3 py-2 border-b border-white/5 mb-1.5">
+                    <p className="text-[10px] text-white/40 uppercase font-black tracking-wider">Account</p>
+                    <p className="text-xs font-bold text-white truncate">{user?.fullName || "Aravind Sharma"}</p>
+                    <p className="text-[9px] text-white/50 truncate font-semibold">{user?.email || "aravind@example.com"}</p>
+                  </div>
+                  
+                  {/* Modify Plans option */}
+                  <button 
+                    onClick={() => {
+                      setShowStepper(true);
+                      setProfileMenuOpen(false);
+                    }}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-bold text-white/70 hover:text-white hover:bg-white/5 transition-all text-left cursor-pointer"
+                  >
+                    <Settings className="w-3.5 h-3.5 text-violet-400" />
+                    <span>Modify Travel Plans</span>
+                  </button>
+
+                  {/* Theme Toggle option */}
+                  <button 
+                    onClick={() => {
+                      toggleTheme();
+                    }}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-bold text-white/70 hover:text-white hover:bg-white/5 transition-all text-left cursor-pointer"
+                  >
+                    {isDarkMode ? (
+                      <>
+                        <Sun className="w-3.5 h-3.5 text-amber-400" />
+                        <span>Theme: Light Mode</span>
+                      </>
+                    ) : (
+                      <>
+                        <Moon className="w-3.5 h-3.5 text-indigo-400" />
+                        <span>Theme: Dark Mode</span>
+                      </>
+                    )}
+                  </button>
+
+                  <div className="h-px bg-white/5 my-1.5" />
+
+                  {/* Log Out option */}
+                  <button 
+                    onClick={() => {
+                      handleLogout();
+                      setProfileMenuOpen(false);
+                    }}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-bold text-red-400 hover:bg-red-500/10 transition-all text-left cursor-pointer"
+                  >
+                    <LogOut className="w-3.5 h-3.5" />
+                    <span>Log Out</span>
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -304,18 +490,6 @@ export default function Dashboard() {
                   </button>
                 );
               })}
-              
-              {/* Modify Plans button */}
-              <button
-                onClick={() => {
-                  setShowStepper(true);
-                  setSidebarOpen(false);
-                }}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold tracking-wide transition-all text-left text-white/80 hover:bg-white/5 hover:text-white border border-white/10 bg-white/5 mt-2"
-              >
-                <Settings className="w-4 h-4" />
-                <span>Modify Plans</span>
-              </button>
             </div>
           </div>
         )}
@@ -323,49 +497,7 @@ export default function Dashboard() {
         {/* CENTER MAIN CONTENT WORKSPACE */}
         <main className="flex-1 p-6 md:p-8 space-y-8 overflow-y-auto animate-dashboard-fade">
           
-          {/* GLOBAL NAVIGATION MENU */}
-          <div className="space-y-4">
-            {/* Desktop Horizontal Navigation Menu */}
-            <div className="hidden md:block w-full">
-              <div className="glass-panel p-2 flex items-center justify-between gap-2 bg-white/[0.03] border-white/[0.08] rounded-2xl shadow-lg">
-                <div className="flex items-center gap-1.5 flex-grow justify-start">
-                  {[
-                    { id: 'dashboard', label: 'Home', icon: <Home className="w-4 h-4" /> },
-                    { id: 'map', label: 'Interactive Map', icon: <Map className="w-4 h-4" /> },
-                    { id: 'route', label: 'Find Route', icon: <Compass className="w-4 h-4" /> },
-                    { id: 'weather', label: 'Weather Forecast', icon: <Sun className="w-4 h-4" /> },
-                    { id: 'translator', label: 'Language Translator', icon: <Languages className="w-4 h-4" /> },
-                    { id: 'budget', label: 'Budget Tracker', icon: <Wallet className="w-4 h-4" /> }
-                  ].map((item) => {
-                    const isActive = activeSection === item.id;
-                    return (
-                      <button
-                        key={item.id}
-                        onClick={() => setActiveSection(item.id)}
-                        className={`flex items-center gap-2 px-4 py-3 rounded-xl text-xs font-bold transition-all ${
-                          isActive 
-                            ? 'bg-violet-600/25 border border-violet-500/35 text-white shadow-md' 
-                            : 'text-white/60 hover:bg-white/5 hover:text-white'
-                        }`}
-                      >
-                        {item.icon}
-                        <span>{item.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
 
-                {/* Modify Plans button */}
-                <button
-                  onClick={() => setShowStepper(true)}
-                  className="flex items-center gap-1.5 px-4 py-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-xs font-bold text-white transition-all shrink-0"
-                >
-                  <Settings className="w-4 h-4" />
-                  <span>Modify Plans</span>
-                </button>
-              </div>
-            </div>
-          </div>
 
           {/* DYNAMIC SUBSECTION RENDERING */}
           {activeSection === 'dashboard' && (
@@ -374,6 +506,7 @@ export default function Dashboard() {
               <div class="w-full">
                 <GoogleMapPanel 
                   wishlist={wishlist} 
+                  destinations={destinations}
                   activeRoute={activeRoutePolyline} 
                   onAddWishlist={handleAddWishlist}
                   onUpdatePlaceName={updatePlaceName}
@@ -381,6 +514,8 @@ export default function Dashboard() {
                     setWeatherSelectedCity(city);
                     setActiveSection('weather');
                   }}
+                  userCoords={userCoords}
+                  onUpdateUserCoords={setUserCoords}
                 />
               </div>
 
@@ -461,16 +596,16 @@ export default function Dashboard() {
               <div className="lg:col-span-7 space-y-4">
                 <div className="flex justify-between items-center text-xs font-bold text-white/50 border-b border-white/5 pb-2">
                   <span>Matched Destinations in {selectedState}</span>
-                  <span>{filteredPlaces.length} Sights</span>
+                  <span>{mapSights.length} Sights</span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[580px] overflow-y-auto pr-1 custom-scrollbar">
-                  {filteredPlaces.length === 0 ? (
+                  {mapSights.length === 0 ? (
                     <div className="col-span-full py-16 text-center text-xs text-white/35">
                       No matching destinations found. Expand your category filters!
                     </div>
                   ) : (
-                    filteredPlaces.map((dest) => (
+                    mapSights.map((dest) => (
                       <GlassCard key={dest.id} className="overflow-hidden flex flex-col justify-between bg-white/[0.04]">
                         <div className="relative h-32 w-full overflow-hidden">
                           <img
@@ -500,9 +635,17 @@ export default function Dashboard() {
                           <div className="flex gap-2 mt-4">
                             <button
                               onClick={() => handleAddWishlist(dest)}
-                              className="flex-grow py-2 rounded-xl bg-violet-600/10 hover:bg-violet-600/20 border border-violet-500/20 text-[10px] font-bold text-violet-300 transition-all"
+                              disabled={addingWishlistId === dest.id}
+                              className="flex-grow py-2 rounded-xl bg-violet-600/10 hover:bg-violet-600/20 border border-violet-500/20 text-[10px] font-bold text-violet-300 transition-all flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                              + Wishlist
+                              {addingWishlistId === dest.id ? (
+                                <>
+                                  <span className="w-3 h-3 border-2 border-violet-300 border-t-transparent rounded-full animate-spin"></span>
+                                  Adding...
+                                </>
+                              ) : (
+                                "+ Wishlist"
+                              )}
                             </button>
                             <button
                               onClick={() => {
@@ -536,6 +679,7 @@ export default function Dashboard() {
                 activeRoute={activeRoutePolyline}
                 onClearRoute={() => setActiveRoutePolyline(null)}
                 onDrawRoute={handleDrawRoute}
+                userCoords={userCoords}
               />
             </div>
           )}
@@ -608,12 +752,12 @@ export default function Dashboard() {
         </main>
 
         {/* RIGHT DRAWER WISHLIST SIDEBAR */}
-        <aside className={`transition-all duration-300 ease-in-out shrink-0 border-l border-white/5 z-30
+        <aside className={`transition-all duration-300 ease-in-out shrink-0 border-none z-30
           fixed md:relative top-[72px] md:top-0 right-0 h-[calc(100vh-72px)] md:h-auto
-          bg-slate-950/95 md:bg-slate-950/40 backdrop-blur-xl md:backdrop-blur-none
+          bg-transparent backdrop-blur-none
           ${rightPanelOpen 
             ? 'w-80 translate-x-0' 
-            : 'w-0 translate-x-full md:translate-x-0 md:w-0 overflow-hidden border-l-0'
+            : 'w-0 translate-x-full md:translate-x-0 md:w-0 overflow-hidden'
           }`}
         >
           <div className="p-4 h-full">

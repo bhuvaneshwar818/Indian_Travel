@@ -3,8 +3,6 @@ import Navbar from '../components/Navbar'
 import Hero from '../components/Hero'
 import SearchDropdowns from '../components/SearchDropdowns'
 import PopularDestinations from '../components/PopularDestinations'
-import InteractiveMap from '../components/InteractiveMap'
-import AITravelPlanner from '../components/AITravelPlanner'
 import Features from '../components/Features'
 import Reviews from '../components/Reviews'
 import FAQ from '../components/FAQ'
@@ -23,14 +21,8 @@ export default function Home() {
       {/* Top vacations carousel scroll (Popular Destinations) */}
       <PopularDestinations />
 
-      {/* Interactive SVG India Map */}
-      <InteractiveMap />
-
       {/* Combined Dropdowns + India SVG Map side-by-side split explorer panel */}
       <SearchDropdowns />
-
-      {/* Main AI Travel planning Assistant chatbot */}
-      <AITravelPlanner />
 
       {/* 3D claymorphic Feature items (Personalized AI Feature Assistant Grid) */}
       <Features />

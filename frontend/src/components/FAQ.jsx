@@ -50,7 +50,7 @@ export default function FAQ() {
             return (
               <div 
                 key={index} 
-                className="clay-card border bg-white/80 dark:bg-slate-900/60 overflow-hidden transition-all duration-300"
+                className="clay-card clay-card-hover border bg-white/80 dark:bg-slate-900/60 overflow-hidden"
               >
                 {/* Header click */}
                 <button

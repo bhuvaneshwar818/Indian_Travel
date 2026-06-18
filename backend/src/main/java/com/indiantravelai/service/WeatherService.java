@@ -14,7 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 public class WeatherService {
 
-    @Value("${openweather.api.key:}")
+    @Value("${weather.api.key}")
     private String apiKey;
 
     private static class CacheEntry {
@@ -57,7 +57,7 @@ public class WeatherService {
                 // 1. Fetch current weather
                 String currentUrl;
                 if (lat != null && lng != null) {
-                    currentUrl = String.format("https://api.openweathermap.org/data/2.5/weather?lat=%f&lon=%f&appid=%s&units=metric", lat, lng, apiKey);
+                    currentUrl = String.format(java.util.Locale.US, "https://api.openweathermap.org/data/2.5/weather?lat=%f&lon=%f&appid=%s&units=metric", lat, lng, apiKey);
                 } else {
                     currentUrl = String.format("https://api.openweathermap.org/data/2.5/weather?q=%s,IN&appid=%s&units=metric", city, apiKey);
                 }
@@ -73,18 +73,16 @@ public class WeatherService {
                     String icon = weather != null ? (String) weather.get("icon") : "01d";
                     String desc = weather != null ? (String) weather.get("description") : "Clear sky";
                     
-                    String resolvedCity = currentResponse.containsKey("name") && currentResponse.get("name") != null && !((String) currentResponse.get("name")).isEmpty() 
-                                          ? (String) currentResponse.get("name") : city;
-                    if (resolvedCity == null) {
-                        resolvedCity = String.format("Coords: %.2f, %.2f", lat, lng);
-                    }
+                    String resolvedCity = (city != null && !city.trim().isEmpty()) ? city : 
+                                          (currentResponse.containsKey("name") && currentResponse.get("name") != null && !((String) currentResponse.get("name")).isEmpty() 
+                                           ? (String) currentResponse.get("name") : String.format(java.util.Locale.US, "Coords: %.2f, %.2f", lat, lng));
 
                     // 2. Fetch forecast
                     List<WeatherDto.ForecastDayDto> futureList = new ArrayList<>();
                     try {
                         String forecastUrl;
                         if (lat != null && lng != null) {
-                            forecastUrl = String.format("https://api.openweathermap.org/data/2.5/forecast?lat=%f&lon=%f&appid=%s&units=metric", lat, lng, apiKey);
+                            forecastUrl = String.format(java.util.Locale.US, "https://api.openweathermap.org/data/2.5/forecast?lat=%f&lon=%f&appid=%s&units=metric", lat, lng, apiKey);
                         } else {
                             forecastUrl = String.format("https://api.openweathermap.org/data/2.5/forecast?q=%s,IN&appid=%s&units=metric", city, apiKey);
                         }

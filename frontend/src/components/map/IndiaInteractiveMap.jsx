@@ -96,7 +96,9 @@ export default function IndiaInteractiveMap({ selectedState, onSelectState }) {
                 id={loc.id}
                 d={loc.path}
                 className={pathClass}
-                onMouseEnter={() => setHoveredState(dbStateName)}
+                onMouseEnter={() => {
+                  setHoveredState(dbStateName);
+                }}
                 onClick={() => onSelectState(dbStateName)}
               />
             );

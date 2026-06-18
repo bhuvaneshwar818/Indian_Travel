@@ -2,6 +2,7 @@ import React, { useRef } from 'react'
 import { ChevronLeft, ChevronRight, Star, Plus, Check, MapPin, Sparkles } from 'lucide-react'
 import { useTripStore } from '../store/tripStore'
 import { useAuthStore } from '../store/authStore'
+import { useToastStore } from '../store/useToastStore'
 
 const POPULAR_LIST = [
   { id: 1, name: "Goa Beaches", state: "Goa", rating: 4.8, img: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=500", tag: "Beaches", desc: "Tropical shores and glowing shacks." },
@@ -13,13 +14,19 @@ const POPULAR_LIST = [
   { id: 7, name: "Kashmir Valley", state: "Kashmir", rating: 5.0, img: "https://images.unsplash.com/photo-1590050752117-238cb0fb12b1?w=500", tag: "Adventure", desc: "Shikara rides and snowy hills." },
   { id: 8, name: "Rishikesh Hills", state: "Uttarakhand", rating: 4.8, img: "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=500", tag: "Adventure", desc: "Yoga retreats and river rafting." },
   { id: 9, name: "Ooty Gardens", state: "Tamil Nadu", rating: 4.7, img: "https://images.unsplash.com/photo-1590050752117-238cb0fb12b1?w=500", tag: "Adventure", desc: "Tea valleys and toy trains." },
-  { id: 10, name: "Biryani Tour", state: "Hyderabad", rating: 4.8, img: "https://images.unsplash.com/photo-1608957541552-87052c3d80d2?w=500", tag: "Food", desc: "Charminar tours and Nizami kebabs." }
+  { id: 10, name: "Biryani Tour", state: "Hyderabad", rating: 4.8, img: "https://images.unsplash.com/photo-1608957541552-87052c3d80d2?w=500", tag: "Food", desc: "Charminar tours and Nizami kebabs." },
+  { id: 11, name: "Taj Mahal Agra", state: "Uttar Pradesh", rating: 4.9, img: "https://images.unsplash.com/photo-1564507592333-c60657eea523?w=500", tag: "Historical", desc: "Monument of love and Mughal legacy." },
+  { id: 12, name: "Munnar Hills", state: "Kerala", rating: 4.8, img: "https://images.unsplash.com/photo-1513694203232-719a280e022f?w=500", tag: "Adventure", desc: "Lush tea gardens and misty peaks." },
+  { id: 13, name: "Ajanta & Ellora", state: "Maharashtra", rating: 4.8, img: "https://images.unsplash.com/photo-1600100397608-f010f423b971?w=500", tag: "Historical", desc: "Ancient rock-cut caves and sculptures." },
+  { id: 14, name: "Darjeeling Hills", state: "West Bengal", rating: 4.7, img: "https://images.unsplash.com/photo-1555899434-94d1368aa7af?w=500", tag: "Adventure", desc: "Panoramic Himalayan views and tea gardens." },
+  { id: 15, name: "Rann of Kutch", state: "Gujarat", rating: 4.8, img: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=500", tag: "Adventure", desc: "Vast white salt desert and cultural festival." }
 ]
 
 export default function PopularDestinations() {
   const scrollRef = useRef(null)
   const { bookmarks, addBookmark, removeBookmark } = useTripStore()
   const { isAuthenticated } = useAuthStore()
+  const { addToast } = useToastStore()
 
   const scroll = (direction) => {
     if (scrollRef.current) {
@@ -37,14 +44,14 @@ export default function PopularDestinations() {
 
   const handleBookmark = (item) => {
     if (!isAuthenticated) {
-      alert("Please log in to save destinations to your wishlist!")
+      addToast("Please log in to save destinations to your wishlist!", "warning")
       return
     }
     // Toggle simulated favorite bookmark
     if (isBookmarked(item.name)) {
-      alert(`Removed "${item.name}" from your travel wishlist!`)
+      addToast(`Removed "${item.name}" from your travel wishlist!`, "success")
     } else {
-      alert(`Added "${item.name}" to your travel wishlist!`)
+      addToast(`Added "${item.name}" to your travel wishlist!`, "success")
     }
   }
 
@@ -112,7 +119,7 @@ export default function PopularDestinations() {
               key={item.id}
               className="flex-shrink-0 w-[290px] sm:w-[320px] snap-start"
             >
-              <div className="clay-card overflow-hidden h-[420px] flex flex-col justify-between group bg-white/80 hover:-translate-y-1.5 transition-transform duration-300 dark:bg-slate-900/60">
+              <div className="clay-card clay-card-hover overflow-hidden h-[420px] flex flex-col justify-between group bg-white/80 dark:bg-slate-900/60">
                 
                 {/* Image */}
                 <div className="relative h-56 w-full overflow-hidden shadow-inner">

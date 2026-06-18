@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { MapPin, Star, Sparkles, AlertCircle, ArrowRight, Utensils, CloudSun } from 'lucide-react'
 import India from '@svg-maps/india'
+import { indianTravelData } from '../lib/indianTravelData'
 
 // Define detailed state travel metadata for map selections
 const stateData = {
@@ -400,6 +401,9 @@ export default function InteractiveMap() {
     desc: `We are currently mapping out popular destinations, culinary spots, and heritage sights in ${selectedState}. Click a glowing travel hub like Rajasthan, Goa, or Kerala to try our active AI travel wizard!`
   };
 
+  const selectedStateObj = indianTravelData.find(st => st.state.toLowerCase() === selectedState.toLowerCase());
+  const statePlaces = selectedStateObj ? selectedStateObj.places : [];
+
   return (
     <section id="explore" className="py-24 bg-white dark:bg-[#06020E] relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -463,7 +467,9 @@ export default function InteractiveMap() {
                           const dbState = ID_STATE_MAP[loc.id] || loc.name;
                           setSelectedState(dbState);
                         }}
-                        onMouseEnter={() => setHoveredState(dbStateName)}
+                        onMouseEnter={() => {
+                          setHoveredState(dbStateName);
+                        }}
                         onMouseLeave={() => setHoveredState(null)}
                       />
                     );
@@ -538,19 +544,29 @@ export default function InteractiveMap() {
                     {/* Sights list */}
                     <div className="space-y-4">
                       <div>
-                        <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2 flex items-center gap-1.5">
+                        <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3 flex items-center gap-1.5">
                           <Sparkles className="w-3.5 h-3.5 text-primary" />
-                          <span>Must Visit Attractions</span>
+                          <span>Must Visit Attractions ({statePlaces.length})</span>
                         </h4>
-                        <div className="flex flex-wrap gap-2">
-                          {currentStateData.sights.map((sight) => (
-                            <span 
-                              key={sight} 
-                              className="px-3 py-1 text-xs font-semibold rounded-xl bg-purple-50 text-primary border border-purple-100 dark:bg-purple-950/20 dark:text-purple-300 dark:border-purple-900/30"
-                            >
-                              {sight}
-                            </span>
-                          ))}
+                        <div className="space-y-3 max-h-[260px] overflow-y-auto pr-1 custom-scrollbar">
+                          {statePlaces.length === 0 ? (
+                            <div className="py-8 text-center text-xs text-slate-400">
+                              Attractions list under development
+                            </div>
+                          ) : (
+                            statePlaces.map((place) => (
+                              <div key={place.name} className="flex gap-3 p-3 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200/50 dark:border-slate-800/40 items-center transition-all duration-200 hover:scale-[1.01] hover:bg-slate-100/50 dark:hover:bg-white/[0.05]">
+                                <img src={place.image} alt={place.name} className="w-14 h-14 rounded-lg object-cover flex-shrink-0" />
+                                <div className="text-left min-w-0 flex-1">
+                                  <div className="flex justify-between items-start gap-1">
+                                    <h4 className="font-extrabold text-xs text-slate-800 dark:text-white truncate">{place.name}</h4>
+                                    <span className="px-1.5 py-0.5 rounded bg-violet-500/10 text-violet-600 dark:text-violet-300 text-[8px] font-bold uppercase tracking-wide flex-shrink-0">{place.type}</span>
+                                  </div>
+                                  <p className="text-[10px] text-slate-500 dark:text-white/40 mt-1 line-clamp-2 leading-relaxed">{place.info}</p>
+                                </div>
+                              </div>
+                            ))
+                          )}
                         </div>
                       </div>
 
