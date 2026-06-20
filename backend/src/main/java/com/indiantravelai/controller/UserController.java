@@ -3,12 +3,12 @@ package com.indiantravelai.controller;
 import com.indiantravelai.entity.Bookmark;
 import com.indiantravelai.entity.Destination;
 import com.indiantravelai.entity.User;
-import com.indiantravelai.repository.BookmarkRepository;
-import com.indiantravelai.repository.DestinationRepository;
-import com.indiantravelai.repository.UserRepository;
+import com.indiantravelai.repository.BookmarkRepositoryImpl;
+import com.indiantravelai.repository.DestinationRepositoryImpl;
+import com.indiantravelai.repository.UserRepositoryImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
+
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -23,13 +23,13 @@ import java.util.stream.Collectors;
 public class UserController {
 
     @Autowired
-    private UserRepository userRepository;
+    private UserRepositoryImpl userRepository;
 
     @Autowired
-    private DestinationRepository destinationRepository;
+    private DestinationRepositoryImpl destinationRepository;
 
     @Autowired
-    private BookmarkRepository bookmarkRepository;
+    private BookmarkRepositoryImpl bookmarkRepository;
 
     @GetMapping("/profile")
     public ResponseEntity<?> getUserProfile(Principal principal) {
@@ -58,7 +58,8 @@ public class UserController {
         }
         List<Bookmark> bookmarks = bookmarkRepository.findByUserUsername(principal.getName());
         List<Destination> destinations = bookmarks.stream()
-                .map(Bookmark::getDestination)
+                .map(b -> destinationRepository.findById(b.getDestinationId()).orElse(null))
+                .filter(d -> d != null)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(destinations);
     }
@@ -79,13 +80,12 @@ public class UserController {
             return ResponseEntity.ok("Destination is already bookmarked!");
         }
 
-        Bookmark bookmark = new Bookmark(userOpt.get(), destOpt.get());
+        Bookmark bookmark = new Bookmark(userOpt.get().getId(), destId);
         bookmarkRepository.save(bookmark);
         return ResponseEntity.ok("Destination bookmarked successfully!");
     }
 
     @DeleteMapping("/bookmarks/{destId}")
-    @Transactional
     public ResponseEntity<?> removeBookmark(@PathVariable Long destId, Principal principal) {
         if (principal == null) {
             return ResponseEntity.status(401).build();

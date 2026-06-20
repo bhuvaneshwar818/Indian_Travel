@@ -1,22 +1,14 @@
 package com.indiantravelai.entity;
 
-import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-@Entity
-@Table(name = "reviews")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Review {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Column(nullable = false)
     private String userName;
-
     private String userAvatar;
     private String location;
-    private int rating; // 1 to 5 stars
-
-    @Column(length = 1000, nullable = false)
+    private int rating;
     private String comment;
 
     public Review() {}

@@ -2,8 +2,8 @@ package com.indiantravelai.controller;
 
 import com.indiantravelai.entity.Trip;
 import com.indiantravelai.model.ChatMessage;
-import com.indiantravelai.repository.ChatMessageRepository;
-import com.indiantravelai.repository.TripRepository;
+import com.indiantravelai.repository.ChatMessageRepositoryImpl;
+import com.indiantravelai.repository.TripRepositoryImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
@@ -21,10 +21,10 @@ import java.util.Map;
 public class ChatController {
 
     @Autowired
-    private ChatMessageRepository chatMessageRepository;
+    private ChatMessageRepositoryImpl chatMessageRepository;
 
     @Autowired
-    private TripRepository tripRepository;
+    private TripRepositoryImpl tripRepository;
 
     // WebSocket route for broadcasting group messages
     @MessageMapping("/chat/{tripId}")
@@ -41,7 +41,7 @@ public class ChatController {
         try {
             Trip trip = tripRepository.findById(tripId).orElse(null);
             if (trip != null) {
-                ChatMessage chat = new ChatMessage(trip, senderName, messageText);
+                ChatMessage chat = new ChatMessage(tripId, senderName, messageText);
                 chatMessageRepository.save(chat);
             }
         } catch (Exception e) {

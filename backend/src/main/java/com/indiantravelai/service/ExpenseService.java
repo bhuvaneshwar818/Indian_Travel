@@ -4,12 +4,11 @@ import com.indiantravelai.dto.ExpenseDto;
 import com.indiantravelai.entity.Trip;
 import com.indiantravelai.entity.User;
 import com.indiantravelai.model.Expense;
-import com.indiantravelai.repository.ExpenseRepository;
-import com.indiantravelai.repository.TripRepository;
-import com.indiantravelai.repository.UserRepository;
+import com.indiantravelai.repository.ExpenseRepositoryImpl;
+import com.indiantravelai.repository.TripRepositoryImpl;
+import com.indiantravelai.repository.UserRepositoryImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -23,7 +22,13 @@ import java.util.stream.Collectors;
 public class ExpenseService {
 
     @Autowired
-    private ExpenseRepository expenseRepository;
+    private ExpenseRepositoryImpl expenseRepository;
+
+    @Autowired
+    private TripRepositoryImpl tripRepository;
+
+    @Autowired
+    private UserRepositoryImpl userRepository;
 
     @Autowired
     private TripService tripService;
@@ -34,11 +39,10 @@ public class ExpenseService {
         return expenses.stream().map(this::convertToDto).collect(Collectors.toList());
     }
 
-    @Transactional
     public ExpenseDto addExpense(String username, ExpenseDto dto) {
         Trip trip = tripService.getOrCreateActiveTrip(username);
         Expense expense = new Expense(
-                trip,
+                trip.getId(),
                 dto.getDescription(),
                 dto.getAmount() != null ? dto.getAmount() : BigDecimal.ZERO,
                 dto.getCategory() != null ? dto.getCategory() : "Other",
@@ -49,13 +53,12 @@ public class ExpenseService {
         return convertToDto(saved);
     }
 
-    @Transactional
     public void deleteExpense(String username, Long id) {
         Expense expense = expenseRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Expense not found with id: " + id));
-        if (!expense.getTrip().getUser().getUsername().equals(username)) {
-            throw new RuntimeException("Unauthorized to delete expense");
-        }
+        
+        verifyOwnership(expense.getTripId(), username);
+        
         expenseRepository.delete(expense);
     }
 
@@ -66,7 +69,6 @@ public class ExpenseService {
         BigDecimal total = BigDecimal.ZERO;
         Map<String, BigDecimal> categories = new HashMap<>();
         
-        // Initialize categories with zero
         categories.put("Food", BigDecimal.ZERO);
         categories.put("Transport", BigDecimal.ZERO);
         categories.put("Stay", BigDecimal.ZERO);
@@ -88,7 +90,6 @@ public class ExpenseService {
         summary.put("totalSpent", total);
         summary.put("categoryBreakdown", categories);
         
-        // Split calculations
         String mode = trip.getTravelMode();
         Integer size = trip.getGroupSize();
         if (size == null || size < 1) size = 1;
@@ -105,10 +106,20 @@ public class ExpenseService {
         return summary;
     }
 
+    private void verifyOwnership(Long tripId, String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found: " + username));
+        Trip trip = tripRepository.findById(tripId)
+                .orElseThrow(() -> new RuntimeException("Trip not found: " + tripId));
+        if (!trip.getUserId().equals(user.getId())) {
+            throw new RuntimeException("Unauthorized to delete expense");
+        }
+    }
+
     private ExpenseDto convertToDto(Expense e) {
         return new ExpenseDto(
                 e.getId(),
-                e.getTrip().getId(),
+                e.getTripId(),
                 e.getDescription(),
                 e.getAmount(),
                 e.getCategory(),

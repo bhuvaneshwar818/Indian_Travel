@@ -1,44 +1,25 @@
 package com.indiantravelai.model;
 
-import com.indiantravelai.entity.Trip;
-import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "expenses")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Expense {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "trip_id", nullable = false)
-    private Trip trip;
-
-    @Column(nullable = false)
+    private Long tripId;
     private String description;
-
-    @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal amount;
-
-    private String category; // Food, Transport, Stay, Entry, Other
-
-    @Column(name = "paid_by")
+    private String category;
     private String paidBy;
-
-    @Column(name = "expense_date")
     private LocalDate expenseDate;
-
-    @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
 
     public Expense() {}
 
-    public Expense(Trip trip, String description, BigDecimal amount, String category, String paidBy, LocalDate expenseDate) {
-        this.trip = trip;
+    public Expense(Long tripId, String description, BigDecimal amount, String category, String paidBy, LocalDate expenseDate) {
+        this.tripId = tripId;
         this.description = description;
         this.amount = amount;
         this.category = category;
@@ -49,8 +30,8 @@ public class Expense {
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
-    public Trip getTrip() { return trip; }
-    public void setTrip(Trip trip) { this.trip = trip; }
+    public Long getTripId() { return tripId; }
+    public void setTripId(Long tripId) { this.tripId = tripId; }
 
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }

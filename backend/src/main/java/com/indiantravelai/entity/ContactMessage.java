@@ -1,26 +1,15 @@
 package com.indiantravelai.entity;
 
-import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "contact_messages")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ContactMessage {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Column(nullable = false)
     private String name;
-
-    @Column(nullable = false)
     private String email;
-
     private String subject;
-
-    @Column(length = 2000, nullable = false)
     private String message;
-
     private LocalDateTime createdAt = LocalDateTime.now();
 
     public ContactMessage() {}

@@ -1,7 +1,7 @@
 package com.indiantravelai.service;
 
 import com.indiantravelai.entity.Destination;
-import com.indiantravelai.repository.DestinationRepository;
+import com.indiantravelai.repository.DestinationRepositoryImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,7 +12,7 @@ import java.util.Optional;
 public class DestinationService {
 
     @Autowired
-    private DestinationRepository destinationRepository;
+    private DestinationRepositoryImpl destinationRepository;
 
     public List<Destination> getAll() {
         return destinationRepository.findAll();

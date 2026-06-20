@@ -1,6 +1,7 @@
 package com.indiantravelai.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -21,19 +22,30 @@ public class SecurityConfig {
     @Autowired
     private SupabaseJwtFilter supabaseJwtFilter;
 
+    @Value("${spring.h2.console.enabled:false}")
+    private boolean h2ConsoleEnabled;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .cors(org.springframework.security.config.Customizer.withDefaults())
             .csrf(csrf -> csrf.disable())
-            .headers(headers -> headers.frameOptions(frame -> frame.disable())) // Permit H2 console frame usage
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/session", "/api/auth/logout").permitAll()
-                .requestMatchers("/api/auth/**", "/api/destinations/**", "/api/reviews/**", "/api/contact/**", "/h2-console/**", "/ws/**", "/ws").permitAll()
-                .requestMatchers("/api/wishlist/**", "/api/route/**", "/api/weather/**", "/api/transport/**", "/api/translate/**", "/api/expenses/**", "/api/trip/**", "/api/chat/**").authenticated()
-                .anyRequest().authenticated()
-            );
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
+        // Conditionally enable H2 console frame options
+        if (h2ConsoleEnabled) {
+            http.headers(headers -> headers.frameOptions(frame -> frame.disable()));
+        }
+
+        http.authorizeHttpRequests(auth -> {
+            auth.requestMatchers("/api/auth/session", "/api/auth/logout").permitAll();
+            if (h2ConsoleEnabled) {
+                auth.requestMatchers("/h2-console/**").permitAll();
+            }
+            auth.requestMatchers("/api/auth/**", "/api/destinations/**", "/api/reviews/**", "/api/contact/**", "/ws/**", "/ws").permitAll();
+            auth.requestMatchers("/api/wishlist/**", "/api/route/**", "/api/weather/**", "/api/transport/**", "/api/translate/**", "/api/expenses/**", "/api/trip/**", "/api/chat/**").authenticated();
+            auth.anyRequest().authenticated();
+        });
 
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         http.addFilterBefore(supabaseJwtFilter, UsernamePasswordAuthenticationFilter.class);
@@ -46,4 +58,5 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 }
+
 

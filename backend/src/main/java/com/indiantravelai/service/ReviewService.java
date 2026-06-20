@@ -1,7 +1,7 @@
 package com.indiantravelai.service;
 
 import com.indiantravelai.entity.Review;
-import com.indiantravelai.repository.ReviewRepository;
+import com.indiantravelai.repository.ReviewRepositoryImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -11,7 +11,7 @@ import java.util.List;
 public class ReviewService {
 
     @Autowired
-    private ReviewRepository reviewRepository;
+    private ReviewRepositoryImpl reviewRepository;
 
     public List<Review> getAll() {
         return reviewRepository.findAll();

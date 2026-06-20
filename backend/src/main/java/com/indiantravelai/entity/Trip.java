@@ -1,40 +1,29 @@
 package com.indiantravelai.entity;
 
-import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "trips")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Trip {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
-
+    private Long userId;
     private String title;
     private String state;
     private String category;
-    private String budget; // Budget, Moderate, Luxury
-    private int duration; // Days
-
-    @Column(length = 10000)
-    private String itineraryJson; // Store itinerary as JSON block for rich frontend rendering
-
+    private String budget;
+    private int duration;
+    private String itineraryJson;
     private double totalBudgetEstimate;
     private LocalDateTime createdAt = LocalDateTime.now();
-
-    private String travelMode; // SOLO, GROUP
+    private String travelMode;
     private Integer groupSize;
-    private String transportMode; // OWN_VEHICLE, PUBLIC
+    private String transportMode;
     private String startLocation;
 
     public Trip() {}
 
-    public Trip(User user, String title, String state, String category, String budget, int duration, String itineraryJson, double totalBudgetEstimate) {
-        this.user = user;
+    public Trip(Long userId, String title, String state, String category, String budget, int duration, String itineraryJson, double totalBudgetEstimate) {
+        this.userId = userId;
         this.title = title;
         this.state = state;
         this.category = category;
@@ -47,8 +36,8 @@ public class Trip {
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
-    public User getUser() { return user; }
-    public void setUser(User user) { this.user = user; }
+    public Long getUserId() { return userId; }
+    public void setUserId(Long userId) { this.userId = userId; }
 
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }

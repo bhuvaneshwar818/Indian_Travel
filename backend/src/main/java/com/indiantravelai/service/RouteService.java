@@ -2,7 +2,7 @@ package com.indiantravelai.service;
 
 import com.indiantravelai.dto.RouteResponseDto;
 import com.indiantravelai.model.WishlistPlace;
-import com.indiantravelai.repository.WishlistRepository;
+import com.indiantravelai.repository.WishlistRepositoryImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 public class RouteService {
 
     @Autowired
-    private WishlistRepository wishlistRepository;
+    private WishlistRepositoryImpl wishlistRepository;
 
     @Value("${google.maps.api.key:}")
     private String googleApiKey;

@@ -1,7 +1,7 @@
 package com.indiantravelai.config;
 
 import com.indiantravelai.entity.User;
-import com.indiantravelai.repository.UserRepository;
+import com.indiantravelai.repository.UserRepositoryImpl;
 import com.indiantravelai.service.SupabaseJwtService;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
@@ -31,7 +31,7 @@ public class SupabaseJwtFilter extends OncePerRequestFilter {
     private SupabaseJwtService jwtService;
 
     @Autowired
-    private UserRepository userRepository;
+    private UserRepositoryImpl userRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest req,

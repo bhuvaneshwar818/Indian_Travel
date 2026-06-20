@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import axios from 'axios'
 import { supabase } from '../lib/supabaseClient'
 
-export const API_BASE = 'http://localhost:8082/api';
+export const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8082/api';
 
 // Create configured Axios instance
 export const apiClient = axios.create({

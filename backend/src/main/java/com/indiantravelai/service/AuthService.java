@@ -3,11 +3,12 @@ package com.indiantravelai.service;
 import com.indiantravelai.config.JwtTokenProvider;
 import com.indiantravelai.dto.*;
 import com.indiantravelai.entity.User;
-import com.indiantravelai.repository.UserRepository;
+import com.indiantravelai.repository.UserRepositoryImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.security.SecureRandom;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -15,7 +16,7 @@ import java.util.UUID;
 public class AuthService {
 
     @Autowired
-    private UserRepository userRepository;
+    private UserRepositoryImpl userRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -26,6 +27,8 @@ public class AuthService {
     @Autowired
     private EmailService emailService;
 
+    private static final SecureRandom secureRandom = new SecureRandom();
+
     public String registerUser(SignupRequest request) {
         if (userRepository.findByUsername(request.getUsername()).isPresent()) {
             throw new RuntimeException("Username is already taken!");
@@ -34,22 +37,19 @@ public class AuthService {
             throw new RuntimeException("Email is already registered!");
         }
 
-        // Create User (default enabled = true for ease of use, but we generate OTP to show OTP flow)
         User user = new User();
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setFullName(request.getFullName());
         user.setRole("ROLE_USER");
-        
-        // Generate a 6-digit numerical OTP code
-        String otpCode = String.format("%06d", (int)(Math.random() * 1000000));
+
+        String otpCode = String.format("%06d", secureRandom.nextInt(1000000));
         user.setVerificationToken(otpCode);
-        user.setEnabled(false); // require OTP verification to activate!
+        user.setEnabled(false);
 
         userRepository.save(user);
 
-        // Send OTP email
         emailService.sendVerificationEmail(user.getEmail(), otpCode);
 
         return "User registered successfully! An OTP has been sent to your email.";
@@ -75,7 +75,6 @@ public class AuthService {
     public JwtResponse loginUser(LoginRequest request) {
         Optional<User> userOpt = userRepository.findByUsername(request.getUsername());
         if (userOpt.isEmpty()) {
-            // Fallback to checking email
             userOpt = userRepository.findByEmail(request.getUsername());
         }
 
@@ -103,7 +102,7 @@ public class AuthService {
         }
 
         User user = userOpt.get();
-        String token = UUID.randomUUID().toString().substring(0, 8).toUpperCase(); // Short, easy-to-type token
+        String token = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
         user.setResetPasswordToken(token);
         userRepository.save(user);
 

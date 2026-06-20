@@ -1,36 +1,18 @@
 package com.indiantravelai.entity;
 
-import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-@Entity
-@Table(name = "users", indexes = {
-    @Index(name = "idx_users_username", columnList = "username"),
-    @Index(name = "idx_users_email", columnList = "email")
-})
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class User {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Column(nullable = false, unique = true)
     private String username;
-
-    @Column(nullable = false, unique = true)
     private String email;
-
-    @Column(nullable = false)
     private String password;
-
-    @Column(nullable = false)
     private String fullName;
-
-    @Column(nullable = false)
-    private String role; // e.g., "ROLE_USER" or "ROLE_ADMIN"
-
+    private String role;
     private String verificationToken;
-    private boolean enabled = true; // Auto-verify / enable for ease of testing, toggled via OTP
+    private boolean enabled = true;
     private String resetPasswordToken;
-
     private Integer age;
     private String gender;
     private boolean emailVerified = false;

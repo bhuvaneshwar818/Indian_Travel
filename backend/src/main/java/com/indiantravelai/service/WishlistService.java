@@ -4,12 +4,11 @@ import com.indiantravelai.dto.WishlistDto;
 import com.indiantravelai.entity.Trip;
 import com.indiantravelai.entity.User;
 import com.indiantravelai.model.WishlistPlace;
-import com.indiantravelai.repository.TripRepository;
-import com.indiantravelai.repository.UserRepository;
-import com.indiantravelai.repository.WishlistRepository;
+import com.indiantravelai.repository.TripRepositoryImpl;
+import com.indiantravelai.repository.UserRepositoryImpl;
+import com.indiantravelai.repository.WishlistRepositoryImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -19,7 +18,13 @@ import java.util.stream.Collectors;
 public class WishlistService {
 
     @Autowired
-    private WishlistRepository wishlistRepository;
+    private WishlistRepositoryImpl wishlistRepository;
+
+    @Autowired
+    private TripRepositoryImpl tripRepository;
+
+    @Autowired
+    private UserRepositoryImpl userRepository;
 
     @Autowired
     private TripService tripService;
@@ -30,16 +35,14 @@ public class WishlistService {
         return places.stream().map(this::convertToDto).collect(Collectors.toList());
     }
 
-    @Transactional
     public WishlistDto addPlace(String username, WishlistDto dto) {
         Trip trip = tripService.getOrCreateActiveTrip(username);
         
-        // Find next sort order
         List<WishlistPlace> currentList = wishlistRepository.findByTripIdOrderBySortOrderAsc(trip.getId());
         int nextOrder = currentList.size() + 1;
 
         WishlistPlace place = new WishlistPlace(
-                trip,
+                trip.getId(),
                 dto.getPlaceName(),
                 dto.getState(),
                 dto.getCategory(),
@@ -52,19 +55,15 @@ public class WishlistService {
         return convertToDto(saved);
     }
 
-    @Transactional
     public void removePlace(String username, Long id) {
         WishlistPlace place = wishlistRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Wishlist place not found with id: " + id));
         
-        if (!place.getTrip().getUser().getUsername().equals(username)) {
-            throw new RuntimeException("Unauthorized operation on wishlist");
-        }
+        verifyOwnership(place.getTripId(), username);
         
         wishlistRepository.delete(place);
     }
 
-    @Transactional
     public void reorderWishlist(String username, List<Long> ids) {
         Trip trip = tripService.getOrCreateActiveTrip(username);
         List<WishlistPlace> places = wishlistRepository.findByTripIdOrderBySortOrderAsc(trip.getId());
@@ -82,24 +81,31 @@ public class WishlistService {
         }
     }
 
-    @Transactional
     public WishlistDto updatePlaceName(String username, Long id, String newName) {
         WishlistPlace place = wishlistRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Wishlist place not found with id: " + id));
         
-        if (!place.getTrip().getUser().getUsername().equals(username)) {
-            throw new RuntimeException("Unauthorized operation on wishlist");
-        }
+        verifyOwnership(place.getTripId(), username);
         
         place.setPlaceName(newName);
         WishlistPlace saved = wishlistRepository.save(place);
         return convertToDto(saved);
     }
 
+    private void verifyOwnership(Long tripId, String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found: " + username));
+        Trip trip = tripRepository.findById(tripId)
+                .orElseThrow(() -> new RuntimeException("Trip not found: " + tripId));
+        if (!trip.getUserId().equals(user.getId())) {
+            throw new RuntimeException("Unauthorized operation on wishlist");
+        }
+    }
+
     private WishlistDto convertToDto(WishlistPlace place) {
         return new WishlistDto(
                 place.getId(),
-                place.getTrip().getId(),
+                place.getTripId(),
                 place.getPlaceName(),
                 place.getState(),
                 place.getCategory(),

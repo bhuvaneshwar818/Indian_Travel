@@ -11,10 +11,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import com.indiantravelai.entity.User;
-import com.indiantravelai.repository.UserRepository;
+import com.indiantravelai.repository.UserRepositoryImpl;
 import io.jsonwebtoken.Claims;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.beans.factory.annotation.Value;
 import java.util.Optional;
 import java.util.HashMap;
 import java.util.Map;
@@ -27,10 +28,13 @@ public class AuthController {
     private AuthService authService;
 
     @Autowired
-    private UserRepository userRepository;
+    private UserRepositoryImpl userRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Value("${app.cookie.secure:false}")
+    private boolean cookieSecure;
 
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest request) {
@@ -68,7 +72,7 @@ public class AuthController {
             // Set HttpOnly cookie containing the locally generated JWT
             org.springframework.http.ResponseCookie responseCookie = org.springframework.http.ResponseCookie.from("auth_token", jwtResponse.getToken())
                     .httpOnly(true)
-                    .secure(false) // false for local HTTP development
+                    .secure(cookieSecure)
                     .path("/")
                     .maxAge(60 * 60 * 24) // 24 hours
                     .sameSite("Strict")
@@ -163,7 +167,7 @@ public class AuthController {
         User user = userOpt.get();
         org.springframework.http.ResponseCookie responseCookie = org.springframework.http.ResponseCookie.from("auth_token", dto.getAccessToken())
                 .httpOnly(true)
-                .secure(false) // false for local http development
+                .secure(cookieSecure)
                 .path("/")
                 .maxAge(60 * 60 * 24) // 24 hours
                 .sameSite("Strict")
@@ -251,7 +255,7 @@ public class AuthController {
         // Set HttpOnly auth cookie using the Supabase token
         org.springframework.http.ResponseCookie responseCookie = org.springframework.http.ResponseCookie.from("auth_token", request.getAccessToken())
                 .httpOnly(true)
-                .secure(false) // false for local http development
+                .secure(cookieSecure)
                 .path("/")
                 .maxAge(60 * 60 * 24) // 24 hours
                 .sameSite("Strict")
@@ -273,7 +277,7 @@ public class AuthController {
     public ResponseEntity<?> logout(HttpServletResponse response) {
         org.springframework.http.ResponseCookie responseCookie = org.springframework.http.ResponseCookie.from("auth_token", "")
                 .httpOnly(true)
-                .secure(false)
+                .secure(cookieSecure)
                 .path("/")
                 .maxAge(0) // expire immediately
                 .sameSite("Strict")

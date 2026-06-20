@@ -3,8 +3,8 @@ package com.indiantravelai.service;
 import com.indiantravelai.dto.TripPlanRequest;
 import com.indiantravelai.entity.Trip;
 import com.indiantravelai.entity.User;
-import com.indiantravelai.repository.TripRepository;
-import com.indiantravelai.repository.UserRepository;
+import com.indiantravelai.repository.TripRepositoryImpl;
+import com.indiantravelai.repository.UserRepositoryImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,10 +15,10 @@ import java.util.List;
 public class TripService {
 
     @Autowired
-    private TripRepository tripRepository;
+    private TripRepositoryImpl tripRepository;
 
     @Autowired
-    private UserRepository userRepository;
+    private UserRepositoryImpl userRepository;
 
     public List<Trip> getTripsByUsername(String username) {
         return tripRepository.findByUserUsernameOrderByCreatedAtDesc(username);
@@ -30,12 +30,11 @@ public class TripService {
             return trips.get(0);
         }
         
-        // Create a default placeholder active trip if none exists
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found: " + username));
         
         Trip placeholder = new Trip();
-        placeholder.setUser(user);
+        placeholder.setUserId(user.getId());
         placeholder.setTitle("My Active Plan");
         placeholder.setState("Goa");
         placeholder.setCategory("Beaches");
@@ -57,7 +56,7 @@ public class TripService {
         double totalBudget = calculateBudget(request.getBudget(), request.getDuration());
         String itineraryJson = generateItineraryJson(request.getState(), request.getCategory(), request.getBudget(), request.getDuration());
 
-        Trip trip = new Trip(user, title, request.getState(), request.getCategory(), request.getBudget(), request.getDuration(), itineraryJson, totalBudget);
+        Trip trip = new Trip(user.getId(), title, request.getState(), request.getCategory(), request.getBudget(), request.getDuration(), itineraryJson, totalBudget);
         return tripRepository.save(trip);
     }
 
@@ -65,7 +64,10 @@ public class TripService {
         Trip trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new RuntimeException("Trip not found!"));
 
-        if (!trip.getUser().getUsername().equals(username)) {
+        User user = userRepository.findById(trip.getUserId())
+                .orElseThrow(() -> new RuntimeException("User not found for trip!"));
+
+        if (!user.getUsername().equals(username)) {
             throw new RuntimeException("Unauthorized to delete this trip!");
         }
 
@@ -73,7 +75,7 @@ public class TripService {
     }
 
     private double calculateBudget(String budgetLevel, int duration) {
-        double ratePerDay = 2500.0; // Standard Budget rate
+        double ratePerDay = 2500.0;
         if ("Moderate".equalsIgnoreCase(budgetLevel)) {
             ratePerDay = 6000.0;
         } else if ("Luxury".equalsIgnoreCase(budgetLevel)) {
@@ -89,7 +91,6 @@ public class TripService {
         String travelTips;
         StringBuilder itineraryBuilder = new StringBuilder();
 
-        // 1. Weather and specifics based on state
         if ("Goa".equalsIgnoreCase(state)) {
             weatherStr = "Tropical and warm (26°C - 33°C). Ideal for coastal excursions.";
             hotelList = "[{\"name\": \"Whispering Palms Beach Clay resort\", \"price\": \"₹4,500/night\", \"rating\": 4.7}," +
@@ -121,7 +122,6 @@ public class TripService {
             packingList = "[\"Slip-on shoes for temple tours\", \"Modest clothing\", \"Hand sanitizer\", \"Camera for Ganga Aarti\"]";
             travelTips = "\"Solo Tip: Attend the early morning Subah-e-Banaras at Assi Ghat. Group Tip: Hire a private rowboat for sunset Aarti.\"";
         } else {
-            // General India Template for all other states
             weatherStr = "Moderate and delightful (22°C - 30°C). Perfect for multi-category tourism.";
             hotelList = "[{\"name\": \"Royal Heritage Claymorphic Plaza\", \"price\": \"₹3,800/night\", \"rating\": 4.6}," +
                         "{\"name\": \"Standard Holiday Lodge\", \"price\": \"₹2,100/night\", \"rating\": 4.3}]";
@@ -129,7 +129,6 @@ public class TripService {
             travelTips = "\"Solo Tip: Always use registered e-rickshaws for transit. Group Tip: Try local street food platters to sample varieties.\"";
         }
 
-        // 2. Day by Day itinerary procedural building
         itineraryBuilder.append("[");
         for (int i = 1; i <= duration; i++) {
             itineraryBuilder.append("{");

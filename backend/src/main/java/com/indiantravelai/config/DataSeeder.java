@@ -3,9 +3,9 @@ package com.indiantravelai.config;
 import com.indiantravelai.entity.Destination;
 import com.indiantravelai.entity.Review;
 import com.indiantravelai.entity.User;
-import com.indiantravelai.repository.DestinationRepository;
-import com.indiantravelai.repository.ReviewRepository;
-import com.indiantravelai.repository.UserRepository;
+import com.indiantravelai.repository.DestinationRepositoryImpl;
+import com.indiantravelai.repository.ReviewRepositoryImpl;
+import com.indiantravelai.repository.UserRepositoryImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,13 +15,13 @@ import org.springframework.stereotype.Component;
 public class DataSeeder implements CommandLineRunner {
 
     @Autowired
-    private UserRepository userRepository;
+    private UserRepositoryImpl userRepository;
 
     @Autowired
-    private DestinationRepository destinationRepository;
+    private DestinationRepositoryImpl destinationRepository;
 
     @Autowired
-    private ReviewRepository reviewRepository;
+    private ReviewRepositoryImpl reviewRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;

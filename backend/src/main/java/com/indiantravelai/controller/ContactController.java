@@ -1,7 +1,7 @@
 package com.indiantravelai.controller;
 
 import com.indiantravelai.entity.ContactMessage;
-import com.indiantravelai.repository.ContactMessageRepository;
+import com.indiantravelai.repository.ContactMessageRepositoryImpl;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -15,7 +15,7 @@ import java.util.Map;
 public class ContactController {
 
     @Autowired
-    private ContactMessageRepository contactMessageRepository;
+    private ContactMessageRepositoryImpl contactMessageRepository;
 
     @PostMapping
     public ResponseEntity<?> submitMessage(@Valid @RequestBody ContactMessage message) {

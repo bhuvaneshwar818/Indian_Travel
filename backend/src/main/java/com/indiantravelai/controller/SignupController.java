@@ -1,7 +1,7 @@
 package com.indiantravelai.controller;
 
 import com.indiantravelai.entity.User;
-import com.indiantravelai.repository.UserRepository;
+import com.indiantravelai.repository.UserRepositoryImpl;
 import com.indiantravelai.service.OtpService;
 import com.indiantravelai.service.EmailService;
 import jakarta.validation.Valid;
@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.SecureRandom;
 import java.util.Map;
 
 @RestController
@@ -28,10 +29,12 @@ public class SignupController {
     private EmailService emailService;
 
     @Autowired
-    private UserRepository userRepository;
+    private UserRepositoryImpl userRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    private static final SecureRandom secureRandom = new SecureRandom();
 
     @PostMapping("/otp/send")
     public ResponseEntity<?> sendOtp(@RequestBody Map<String, String> payload) {
@@ -45,7 +48,7 @@ public class SignupController {
         }
 
         try {
-            String code = String.format("%06d", (int)(Math.random() * 1000000));
+            String code = String.format("%06d", secureRandom.nextInt(1000000));
             otpService.requestOtp(email, code);
             emailService.sendVerificationEmail(email, code);
             return ResponseEntity.ok(Map.of("message", "OTP sent successfully"));

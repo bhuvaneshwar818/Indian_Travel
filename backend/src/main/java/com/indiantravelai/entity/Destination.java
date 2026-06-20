@@ -1,38 +1,19 @@
 package com.indiantravelai.entity;
 
-import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-@Entity
-@Table(name = "destinations")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Destination {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Column(nullable = false)
     private String name;
-
-    @Column(nullable = false)
     private String state;
-
-    @Column(nullable = false)
     private String city;
-
-    @Column(nullable = false)
-    private String category; // Temples, Beaches, Historical, Food, Adventure
-
-    @Column(length = 2000)
+    private String category;
     private String description;
-
     private double rating;
     private String imageUrl;
-
-    @Column(length = 1000)
-    private String famousPlaces; // Comma separated key sights
-
-    @Column(length = 1000)
-    private String foodSpots; // Comma separated food suggestions
-
+    private String famousPlaces;
+    private String foodSpots;
     private String weatherInfo;
 
     public Destination() {}

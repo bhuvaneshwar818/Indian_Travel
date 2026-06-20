@@ -1,12 +1,11 @@
 package com.indiantravelai.service;
 
 import com.indiantravelai.entity.OtpToken;
-import com.indiantravelai.repository.OtpTokenRepository;
+import com.indiantravelai.repository.OtpTokenRepositoryImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -17,9 +16,8 @@ public class OtpService {
     private static final Logger log = LoggerFactory.getLogger(OtpService.class);
 
     @Autowired
-    private OtpTokenRepository otpTokenRepository;
+    private OtpTokenRepositoryImpl otpTokenRepository;
 
-    @Transactional
     public void requestOtp(String email, String code) {
         log.info("[LOG] OTP request received for email: {}", email);
         log.info("[LOG] OTP generated: {}", code);
@@ -65,7 +63,6 @@ public class OtpService {
         log.info("[LOG] OTP saved to database for email: {}", email);
     }
 
-    @Transactional
     public void verifyOtp(String email, String code) {
         log.info("[LOG] OTP verification request received for email: {}", email);
 
@@ -116,7 +113,6 @@ public class OtpService {
         log.info("[LOG] Verification success: OTP verified successfully for email: {}", email);
     }
 
-    @Transactional(readOnly = true)
     public boolean isEmailVerified(String email) {
         Optional<OtpToken> tokenOpt = otpTokenRepository.findByEmail(email);
         if (tokenOpt.isEmpty()) {
@@ -136,7 +132,6 @@ public class OtpService {
         return true;
     }
 
-    @Transactional
     public void consumeVerification(String email) {
         otpTokenRepository.findByEmail(email).ifPresent(token -> {
             otpTokenRepository.delete(token);

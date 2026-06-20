@@ -42,7 +42,7 @@
 
 /* Dark mode overrides */
 .dark .dashboard-root {
-  background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+  background: linear-gradient(135deg, #0f0c29 0%, #0a0a0b 50%, #24243e 100%);
   color: #f1f5f9;
 }
 .dark .dashboard-root .text-white,
@@ -83,7 +83,7 @@
 
 /* Custom Glassmorphism Utility Scopes */
 .glass-panel {
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(4, 4, 4, 0.06);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px border rgba(255, 255, 255, 0.12);
@@ -158,10 +158,10 @@
 /* Pulse keyframes for glowing elements */
 @keyframes glowPulse {
   0%, 100% {
-    box-shadow: 0 0 15px rgba(124, 58, 237, 0.3);
+    box-shadow: 0 0 15px rgba(8, 8, 8, 0.3);
   }
   50% {
-    box-shadow: 0 0 25px rgba(124, 58, 237, 0.6);
+    box-shadow: 0 0 25px rgba(18, 18, 19, 0.6);
   }
 }
 

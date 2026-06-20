@@ -3,8 +3,8 @@ package com.indiantravelai.controller;
 import com.indiantravelai.dto.TripPreferencesDto;
 import com.indiantravelai.entity.Trip;
 import com.indiantravelai.entity.User;
-import com.indiantravelai.repository.TripRepository;
-import com.indiantravelai.repository.UserRepository;
+import com.indiantravelai.repository.TripRepositoryImpl;
+import com.indiantravelai.repository.UserRepositoryImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,10 +16,10 @@ import java.util.List;
 public class TripPreferencesController {
 
     @Autowired
-    private TripRepository tripRepository;
+    private TripRepositoryImpl tripRepository;
 
     @Autowired
-    private UserRepository userRepository;
+    private UserRepositoryImpl userRepository;
 
     private Trip getOrCreateActiveTrip(String username) {
         List<Trip> trips = tripRepository.findByUserUsernameOrderByCreatedAtDesc(username);
@@ -30,7 +30,7 @@ public class TripPreferencesController {
                 .orElseThrow(() -> new RuntimeException("User not found: " + username));
         
         Trip placeholder = new Trip();
-        placeholder.setUser(user);
+        placeholder.setUserId(user.getId());
         placeholder.setTitle("My Active Plan");
         placeholder.setState("Goa");
         placeholder.setCategory("Beaches");
