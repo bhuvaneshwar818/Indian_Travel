@@ -65,6 +65,25 @@ public class EmailService {
         sendEmailViaResend(email, subject, htmlContent);
     }
 
+    public void sendTripInvitationEmail(String toEmail, String inviterUsername, String tripTitle) {
+        String subject = "You are Invited to Join a Travel Team on Indian Travel AI!";
+        String dashboardUrl = "http://localhost:5173/";
+        String htmlContent = "<div style=\"font-family: Arial, sans-serif; padding: 25px; border: 1px solid #e2e8f0; border-radius: 12px; max-width: 600px; background-color: #ffffff; color: #1e293b;\">" +
+                "<h2 style=\"color: #4F46E5; margin-bottom: 10px;\">You've Been Invited!</h2>" +
+                "<p style=\"font-size: 15px; line-height: 1.6;\">Hi there,</p>" +
+                "<p style=\"font-size: 15px; line-height: 1.6;\"><strong>@" + inviterUsername + "</strong> has invited you to join their travel plan: <strong>" + tripTitle + "</strong> on Indian Travel AI.</p>" +
+                "<p style=\"font-size: 15px; line-height: 1.6;\">To accept this invitation and begin tracking locations in real-time, click the button below to go to your dashboard, log in or sign up, and navigate to the <strong>Live Tracking</strong> workspace!</p>" +
+                "<div style=\"margin: 25px 0; text-align: center;\">" +
+                "  <a href=\"" + dashboardUrl + "\" style=\"display: inline-block; background-color: #4F46E5; color: #ffffff; padding: 12px 24px; border-radius: 8px; font-weight: bold; text-decoration: none; font-size: 14px; shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);\">Go to Travel Dashboard</a>" +
+                "</div>" +
+                "<p style=\"font-size: 13px; color: #64748b; line-height: 1.6;\">If the button above does not work, copy and paste the following link into your browser: <br><a href=\"" + dashboardUrl + "\" style=\"color: #4F46E5;\">" + dashboardUrl + "</a></p>" +
+                "<hr style=\"border: none; border-top: 1px solid #e2e8f0; margin: 25px 0;\">" +
+                "<p style=\"font-size: 12px; color: #94a3b8;\">Best regards,<br>The Indian Travel AI Team</p>" +
+                "</div>";
+
+        sendEmailViaResend(toEmail, subject, htmlContent);
+    }
+
     private void sendEmailViaResend(String toEmail, String subject, String htmlContent) {
         log.info("[LOG] Email sending started to: {}", toEmail);
 

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useTripStore } from '../store/tripStore'
+import { useWishlistStore } from '../store/useWishlistStore'
 import { useAuthStore } from '../store/authStore'
 import { useToastStore } from '../store/useToastStore'
 import { Search, MapPin, Sparkles, Star, Plus, Check, Compass, Info, CloudSun, Utensils, HelpCircle } from 'lucide-react'
@@ -568,7 +569,8 @@ const stateData = {
 }
 
 export default function SearchDropdowns() {
-  const { destinations, bookmarks, fetchDestinations, fetchBookmarks, addBookmark, removeBookmark, loading } = useTripStore()
+  const { destinations, fetchDestinations, loading } = useTripStore()
+  const { wishlist, fetchWishlist, addPlaceToWishlist, removePlaceFromWishlist } = useWishlistStore()
   const { isAuthenticated } = useAuthStore()
   const { addToast } = useToastStore()
 
@@ -609,12 +611,12 @@ export default function SearchDropdowns() {
     }
   }, [])
 
-  // Fetch bookmarks on mount
+  // Fetch wishlist on mount
   useEffect(() => {
     if (isAuthenticated) {
-      fetchBookmarks()
+      fetchWishlist()
     }
-  }, [fetchBookmarks, isAuthenticated])
+  }, [fetchWishlist, isAuthenticated])
 
   // Dynamic E2E Reactive Filtering whenever state or category changes
   useEffect(() => {
@@ -640,23 +642,74 @@ export default function SearchDropdowns() {
     setSuggestions(list)
   }, [category])
 
-  const isBookmarked = (destId) => {
-    return bookmarks.some((b) => b.id === destId)
+  const isBookmarked = (placeName) => {
+    return wishlist.some((item) => (item.placeName || "").trim().toLowerCase() === (placeName || "").trim().toLowerCase());
   }
 
-  const handleBookmarkToggle = (destId) => {
+  const handleBookmarkToggle = async (dest) => {
     if (!isAuthenticated) {
       addToast("Please log in to save destinations to your wishlist!", "warning")
       return
     }
-    const dest = destinations.find(d => d.id === destId)
-    const placeName = dest ? dest.name : "Destination"
-    if (isBookmarked(destId)) {
-      removeBookmark(destId)
-      addToast(`Removed "${placeName}" from your travel wishlist!`, "success")
+    const placeName = dest.name
+    const existing = wishlist.find((item) => (item.placeName || "").trim().toLowerCase() === (placeName || "").trim().toLowerCase())
+    if (existing) {
+      try {
+        await removePlaceFromWishlist(existing.id)
+        addToast(`Removed "${placeName}" from your travel wishlist!`, "success")
+      } catch (err) {
+        console.error("Failed to remove from wishlist", err)
+        addToast(`Failed to remove "${placeName}" from wishlist.`, "error")
+      }
     } else {
-      addBookmark(destId)
-      addToast(`Added "${placeName}" to your travel wishlist!`, "success")
+      let lat = null
+      let lng = null
+      const query = `${dest.name}, ${dest.city || ''}, ${dest.state}, India`
+      try {
+        if (window.google && window.google.maps && window.google.maps.Geocoder) {
+          const geocoder = new window.google.maps.Geocoder()
+          const geocodePromise = new Promise((resolve) => {
+            geocoder.geocode({ address: query }, (results, status) => {
+              if (status === 'OK' && results[0]) {
+                const loc = results[0].geometry.location
+                resolve({ lat: loc.lat(), lng: loc.lng() })
+              } else {
+                resolve(null)
+              }
+            })
+          })
+          const coords = await geocodePromise
+          if (coords) {
+            lat = coords.lat
+            lng = coords.lng
+          }
+        }
+      } catch (err) {
+        console.warn("Google geocoding failed:", err)
+      }
+      if (!lat || !lng) {
+        try {
+          const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(query)}`)
+          const data = await res.json()
+          if (data && data[0]) {
+            lat = parseFloat(data[0].lat)
+            lng = parseFloat(data[0].lon)
+          }
+        } catch (err) {
+          console.warn("Nominatim fallback failed:", err)
+        }
+      }
+      if (!lat || !lng) {
+        lat = 20.5937
+        lng = 78.9629
+      }
+      try {
+        await addPlaceToWishlist(placeName, dest.state, dest.category, lat, lng)
+        addToast(`Added "${placeName}" to your travel wishlist!`, "success")
+      } catch (err) {
+        console.error("Failed to add to wishlist", err)
+        addToast(`Failed to add "${placeName}" to wishlist.`, "error")
+      }
     }
   }
 
@@ -912,15 +965,15 @@ export default function SearchDropdowns() {
                           
                           {/* Plus / Check wishlist button */}
                           <button
-                            onClick={() => handleBookmarkToggle(dest.id)}
+                            onClick={() => handleBookmarkToggle(dest)}
                             className={`w-10 h-10 rounded-full flex items-center justify-center shadow-lg transition-all active:scale-90 flex-shrink-0 ${
-                              isBookmarked(dest.id)
+                              isBookmarked(dest.name)
                                 ? 'bg-emerald-500 border-2 border-emerald-400 text-white'
                                 : 'bg-white border-2 border-slate-200 text-slate-700 hover:border-primary hover:text-primary dark:bg-slate-900 dark:border-slate-700 dark:text-slate-300 dark:hover:border-primary dark:hover:text-primary'
                             }`}
-                            title={isBookmarked(dest.id) ? "Remove from Wishlist" : "Add to Wishlist"}
+                            title={isBookmarked(dest.name) ? "Remove from Wishlist" : "Add to Wishlist"}
                           >
-                            {isBookmarked(dest.id) 
+                            {isBookmarked(dest.name) 
                               ? <Check className="w-5 h-5 stroke-[2.5]" /> 
                               : <Plus className="w-5 h-5 stroke-[2.5]" />}
                           </button>

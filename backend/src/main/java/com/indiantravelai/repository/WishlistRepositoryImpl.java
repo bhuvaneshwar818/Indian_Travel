@@ -125,6 +125,20 @@ public class WishlistRepositoryImpl {
 
     private LocalDateTime parseLocalDateTime(Object val) {
         if (val == null) return null;
-        return LocalDateTime.parse(val.toString());
+        String str = val.toString();
+        try {
+            return LocalDateTime.parse(str);
+        } catch (Exception e) {
+            try {
+                return java.time.OffsetDateTime.parse(str).toLocalDateTime();
+            } catch (Exception ex) {
+                try {
+                    return java.time.ZonedDateTime.parse(str).toLocalDateTime();
+                } catch (Exception ex2) {
+                    String clean = str.replaceAll("([+-]\\d{2}:?\\d{2}|Z)$", "");
+                    return LocalDateTime.parse(clean);
+                }
+            }
+        }
     }
 }

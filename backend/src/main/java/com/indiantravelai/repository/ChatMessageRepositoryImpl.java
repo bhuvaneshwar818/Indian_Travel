@@ -47,7 +47,7 @@ public class ChatMessageRepositoryImpl {
         m.setTripId(toLong(map.get("trip_id")));
         m.setSenderName((String) map.get("sender_name"));
         m.setMessage((String) map.get("message"));
-        m.setSentAt(map.get("sent_at") != null ? LocalDateTime.parse(map.get("sent_at").toString()) : null);
+        m.setSentAt(parseLocalDateTime(map.get("sent_at")));
         return m;
     }
 
@@ -65,5 +65,24 @@ public class ChatMessageRepositoryImpl {
         if (val == null) return null;
         if (val instanceof Number) return ((Number) val).longValue();
         return Long.parseLong(val.toString());
+    }
+
+    private java.time.LocalDateTime parseLocalDateTime(Object val) {
+        if (val == null) return null;
+        String str = val.toString();
+        try {
+            return java.time.LocalDateTime.parse(str);
+        } catch (Exception e) {
+            try {
+                return java.time.OffsetDateTime.parse(str).toLocalDateTime();
+            } catch (Exception ex) {
+                try {
+                    return java.time.ZonedDateTime.parse(str).toLocalDateTime();
+                } catch (Exception ex2) {
+                    String clean = str.replaceAll("([+-]\\d{2}:?\\d{2}|Z)$", "");
+                    return java.time.LocalDateTime.parse(clean);
+                }
+            }
+        }
     }
 }

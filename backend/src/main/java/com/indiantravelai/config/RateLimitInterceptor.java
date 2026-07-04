@@ -15,8 +15,8 @@ public class RateLimitInterceptor implements HandlerInterceptor {
 
     private final Map<String, RateLimitEntry> requestCounts = new ConcurrentHashMap<>();
 
-    private static final int MAX_REQUESTS = 30; // per minute
-    private static final int AUTH_MAX_REQUESTS = 10; // per minute for auth endpoints
+    private static final int MAX_REQUESTS = 300; // per minute
+    private static final int AUTH_MAX_REQUESTS = 100; // per minute for auth endpoints
     private static final long WINDOW_MS = 60_000; // 1 minute
 
     @Override

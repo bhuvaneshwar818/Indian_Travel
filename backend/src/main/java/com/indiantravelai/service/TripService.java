@@ -5,6 +5,9 @@ import com.indiantravelai.entity.Trip;
 import com.indiantravelai.entity.User;
 import com.indiantravelai.repository.TripRepositoryImpl;
 import com.indiantravelai.repository.UserRepositoryImpl;
+import com.indiantravelai.model.TripInvitation;
+import com.indiantravelai.repository.TripInvitationRepositoryImpl;
+import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,11 +23,25 @@ public class TripService {
     @Autowired
     private UserRepositoryImpl userRepository;
 
+    @Autowired
+    private TripInvitationRepositoryImpl invitationRepository;
+
     public List<Trip> getTripsByUsername(String username) {
         return tripRepository.findByUserUsernameOrderByCreatedAtDesc(username);
     }
 
     public Trip getOrCreateActiveTrip(String username) {
+        // 1. Check if user has an accepted invitation to another user's active trip
+        List<TripInvitation> acceptedInvites = invitationRepository.findByInviteeUsernameAndStatus(username, "ACCEPTED");
+        if (!acceptedInvites.isEmpty()) {
+            Long tripId = acceptedInvites.get(0).getTripId();
+            Optional<Trip> tripOpt = tripRepository.findById(tripId);
+            if (tripOpt.isPresent()) {
+                return tripOpt.get();
+            }
+        }
+
+        // 2. Otherwise, check their own trips
         List<Trip> trips = tripRepository.findByUserUsernameOrderByCreatedAtDesc(username);
         if (!trips.isEmpty()) {
             return trips.get(0);

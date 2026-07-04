@@ -13,6 +13,7 @@ import RouteResults from '../components/dashboard/RouteResults'
 import BudgetTracker from '../components/dashboard/BudgetTracker'
 import LanguageTranslator from '../components/dashboard/LanguageTranslator'
 import GroupChat from '../components/dashboard/GroupChat'
+import LiveTrackingPanel from '../components/dashboard/LiveTrackingPanel'
 import IndiaInteractiveMap from '../components/map/IndiaInteractiveMap'
 import GoogleMapPanel from '../components/map/GoogleMapPanel'
 import WishlistPanel from '../components/wishlist/WishlistPanel'
@@ -21,7 +22,7 @@ import { useToastStore } from '../store/useToastStore'
 import { indianTravelData } from '../lib/indianTravelData'
 import { 
   Home, Map, Heart, Compass, MessageSquare, Wallet, Sun, Moon, Languages, 
-  Settings, LogOut, Bell, Menu, X, ArrowLeft, Star, Plus, CheckCircle2, ChevronRight 
+  Settings, LogOut, Bell, Menu, X, ArrowLeft, Star, Plus, CheckCircle2, ChevronRight, Radar 
 } from 'lucide-react'
 import { AnimatePresence } from 'framer-motion'
 import '../styles/dashboard.css'
@@ -50,7 +51,7 @@ export default function Dashboard() {
   const [activeSection, setActiveSection] = useState('dashboard'); // dashboard, map, wishlist, route, chat, budget, weather, translator
   const [showStepper, setShowStepper] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [rightPanelOpen, setRightPanelOpen] = useState(true);
+  const [rightPanelOpen, setRightPanelOpen] = useState(window.innerWidth >= 768);
   const [activeRoutePolyline, setActiveRoutePolyline] = useState(null);
   const [weatherSelectedCity, setWeatherSelectedCity] = useState(null);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
@@ -58,6 +59,14 @@ export default function Dashboard() {
   // Initialize theme and fetch initial user coordinates
   useEffect(() => {
     if (initTheme) initTheme();
+
+    const handleResize = () => {
+      if (window.innerWidth < 768) {
+        setRightPanelOpen(false);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -72,6 +81,10 @@ export default function Dashboard() {
         { timeout: 8000 }
       );
     }
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
   }, [initTheme]);
 
   // Auto Onboarding trigger states
@@ -318,7 +331,8 @@ export default function Dashboard() {
               { id: 'route', label: 'Find Route', icon: <Compass className="w-3.5 h-3.5" /> },
               { id: 'weather', label: 'Weather Forecast', icon: <Sun className="w-3.5 h-3.5" /> },
               { id: 'translator', label: 'Language Translator', icon: <Languages className="w-3.5 h-3.5" /> },
-              { id: 'budget', label: 'Budget Tracker', icon: <Wallet className="w-3.5 h-3.5" /> }
+              { id: 'budget', label: 'Budget Tracker', icon: <Wallet className="w-3.5 h-3.5" /> },
+              { id: 'tracking', label: 'Live Tracking', icon: <Radar className="w-3.5 h-3.5" /> }
             ].map((item) => {
               const isActive = activeSection === item.id;
               return (
@@ -469,7 +483,8 @@ export default function Dashboard() {
                 { id: 'route', label: 'Find Route', icon: <Compass className="w-4 h-4" /> },
                 { id: 'weather', label: 'Weather Forecast', icon: <Sun className="w-4 h-4" /> },
                 { id: 'translator', label: 'Language Translator', icon: <Languages className="w-4 h-4" /> },
-                { id: 'budget', label: 'Budget Tracker', icon: <Wallet className="w-4 h-4" /> }
+                { id: 'budget', label: 'Budget Tracker', icon: <Wallet className="w-4 h-4" /> },
+                { id: 'tracking', label: 'Live Tracking', icon: <Radar className="w-4 h-4" /> }
               ].map((item) => {
                 const isActive = activeSection === item.id;
                 return (
@@ -747,6 +762,10 @@ export default function Dashboard() {
             <div className="max-w-lg mx-auto">
               <LanguageTranslator />
             </div>
+          )}
+
+          {activeSection === 'tracking' && (
+            <LiveTrackingPanel tripId={wishlist[0]?.tripId} />
           )}
 
         </main>

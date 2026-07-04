@@ -5,7 +5,7 @@ import { Send, Users, Sparkles, AlertCircle } from 'lucide-react'
 import axios from 'axios'
 
 // Native Stomp Client Wrapper using standard Browser WebSocket API
-class NativeStompClient {
+export class NativeStompClient {
   constructor(url, token) {
     this.url = url;
     this.token = token;

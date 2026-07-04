@@ -11,8 +11,8 @@ const AuthCallback = () => {
       if (session) {
         try {
           // Exchange the Supabase access token for a backend HttpOnly auth session
-          const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8082';
-          const response = await fetch(`${API_BASE}/api/auth/session`, {
+          const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8082').replace(/\/api$/, '');
+          const response = await fetch(`${apiBaseUrl}/api/auth/session`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'

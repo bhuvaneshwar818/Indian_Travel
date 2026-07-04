@@ -80,7 +80,7 @@ public class ExpenseRepositoryImpl {
         e.setCategory((String) map.get("category"));
         e.setPaidBy((String) map.get("paid_by"));
         e.setExpenseDate(map.get("expense_date") != null ? LocalDate.parse(map.get("expense_date").toString()) : null);
-        e.setCreatedAt(map.get("created_at") != null ? LocalDateTime.parse(map.get("created_at").toString()) : null);
+        e.setCreatedAt(parseLocalDateTime(map.get("created_at")));
         return e;
     }
 
@@ -108,5 +108,24 @@ public class ExpenseRepositoryImpl {
         if (val instanceof BigDecimal) return (BigDecimal) val;
         if (val instanceof Number) return BigDecimal.valueOf(((Number) val).doubleValue());
         return new BigDecimal(val.toString());
+    }
+
+    private java.time.LocalDateTime parseLocalDateTime(Object val) {
+        if (val == null) return null;
+        String str = val.toString();
+        try {
+            return java.time.LocalDateTime.parse(str);
+        } catch (Exception e) {
+            try {
+                return java.time.OffsetDateTime.parse(str).toLocalDateTime();
+            } catch (Exception ex) {
+                try {
+                    return java.time.ZonedDateTime.parse(str).toLocalDateTime();
+                } catch (Exception ex2) {
+                    String clean = str.replaceAll("([+-]\\d{2}:?\\d{2}|Z)$", "");
+                    return java.time.LocalDateTime.parse(clean);
+                }
+            }
+        }
     }
 }
