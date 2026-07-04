@@ -598,21 +598,18 @@ export default function LiveTrackingPanel({ tripId }) {
     <div className="space-y-6 text-left max-w-4xl mx-auto">
       
       {/* HEADER BANNER */}
-      <GlassCard className="p-6 bg-white/[0.03] border-white/10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <GlassCard className="p-5 bg-white/[0.03] border-white/10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h2 className="text-xl font-display font-extrabold text-white flex items-center gap-2">
+          <h2 className="text-lg font-display font-black text-white flex items-center gap-2">
             <Compass className="w-5 h-5 text-violet-400 animate-spin" />
-            <span>Team Live Tracking</span>
+            <span>Live Tracking</span>
           </h2>
-          <p className="text-xs text-white/50 font-semibold mt-1">
-            Broadcast your coordinates and track your travel buddies in real-time.
-          </p>
         </div>
 
         {tripId ? (
           <button
             onClick={isSharing ? stopSharingLocation : startSharingLocation}
-            className={`flex items-center gap-2 px-4.5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider shadow-lg transition-all active:scale-95 cursor-pointer ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider shadow-md transition-all active:scale-95 cursor-pointer ${
               isSharing 
                 ? 'bg-rose-500 hover:bg-rose-600 text-white' 
                 : 'bg-emerald-500 hover:bg-emerald-600 text-white'
@@ -620,20 +617,20 @@ export default function LiveTrackingPanel({ tripId }) {
           >
             {isSharing ? (
               <>
-                <Square className="w-3.5 h-3.5 fill-white stroke-none" />
+                <Square className="w-3 h-3 fill-white stroke-none" />
                 <span>Stop Sharing</span>
               </>
             ) : (
               <>
-                <Play className="w-3.5 h-3.5 fill-white stroke-none" />
-                <span>Share My Location</span>
+                <Play className="w-3 h-3 fill-white stroke-none" />
+                <span>Share Location</span>
               </>
             )}
           </button>
         ) : (
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[10px] font-bold">
             <ShieldAlert className="w-3.5 h-3.5" />
-            <span>Add wishlist items to unlock tracking</span>
+            <span>Add wishlist items to tracking</span>
           </div>
         )}
       </GlassCard>
@@ -674,8 +671,8 @@ export default function LiveTrackingPanel({ tripId }) {
             <div ref={mapContainerRef} className="w-full h-full" />
 
             {/* Instruction Badge to Click to mock */}
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-full bg-slate-950/90 border border-white/10 text-[9px] font-bold text-white/70 shadow-lg pointer-events-none backdrop-blur-sm whitespace-nowrap">
-              💡 Click anywhere on the map to set/mock your location coordinates!
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-slate-950/90 border border-white/10 text-[9px] font-bold text-white/50 shadow-lg pointer-events-none backdrop-blur-sm whitespace-nowrap">
+              💡 Click map to mock location
             </div>
 
             {/* Dynamic Map Filters floating Overlay */}
@@ -685,7 +682,7 @@ export default function LiveTrackingPanel({ tripId }) {
               <button
                 onClick={recenterMap}
                 className="p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-white/10 text-white shadow-lg backdrop-blur-md flex items-center gap-1 cursor-pointer transition-all active:scale-95"
-                title="Fit All Team Members on Map"
+                title="Recenter"
               >
                 <Maximize2 className="w-3.5 h-3.5 text-violet-400" />
                 <span className="text-[10px] font-bold px-0.5 hidden sm:inline">Recenter</span>
@@ -719,7 +716,7 @@ export default function LiveTrackingPanel({ tripId }) {
             {!wsConnected && (
               <div className="absolute inset-0 bg-slate-950/80 flex flex-col justify-center items-center gap-3">
                 <div className="w-8 h-8 rounded-full border-2 border-violet-400 border-t-transparent animate-spin" />
-                <p className="text-xs font-bold text-white/50">Establishing connection to tracking gateway...</p>
+                <p className="text-xs font-bold text-white/40">Connecting to gateway...</p>
               </div>
             )}
 
@@ -727,7 +724,7 @@ export default function LiveTrackingPanel({ tripId }) {
             {wsConnected && (
               <div className="absolute top-4 left-4 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-900/90 border border-white/10 text-[9px] font-black uppercase tracking-wider text-emerald-400 backdrop-blur-md shadow-md">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <span>Gateway Active</span>
+                <span>Connected</span>
               </div>
             )}
           </div>
@@ -738,7 +735,7 @@ export default function LiveTrackingPanel({ tripId }) {
               <div className="flex justify-between items-center border-b border-white/5 pb-3">
                 <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
                   <Users className="w-4 h-4 text-violet-400" />
-                  <span>Active Travel Buddies</span>
+                  <span>Travel Buddies</span>
                 </h3>
                 <button
                   onClick={fetchMembers}
@@ -756,7 +753,7 @@ export default function LiveTrackingPanel({ tripId }) {
                 </div>
               ) : teamMembers.length === 0 ? (
                 <div className="text-center py-20 text-xs text-white/40">
-                  No active travel buddies joined yet. Send an invite to form a team!
+                  No travel buddies joined.
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -858,7 +855,7 @@ export default function LiveTrackingPanel({ tripId }) {
                 <div className="w-5 h-5 border-2 border-violet-400 border-t-transparent rounded-full animate-spin" />
               </div>
             ) : receivedInvites.length === 0 ? (
-              <p className="text-[11px] text-white/35 italic py-2 text-center">No pending incoming invitations.</p>
+              <p className="text-[11px] text-white/30 italic py-2 text-center">No incoming requests.</p>
             ) : (
               <div className="space-y-2">
                 {receivedInvites.map((invite) => (
@@ -868,21 +865,21 @@ export default function LiveTrackingPanel({ tripId }) {
                   >
                     <div className="min-w-0 text-left">
                       <p className="text-xs font-bold text-white truncate">@{invite.inviterUsername}</p>
-                      <p className="text-[9px] text-white/40">invited you to join</p>
+                      <p className="text-[9px] text-white/40">invited you</p>
                     </div>
 
                     <div className="flex gap-1.5">
                       <button
                         onClick={() => handleAcceptInvite(invite.id)}
                         className="p-1.5 rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/35 cursor-pointer"
-                        title="Accept Invite"
+                        title="Accept"
                       >
                         <Check className="w-3.5 h-3.5" />
                       </button>
                       <button
                         onClick={() => handleRejectInvite(invite.id)}
                         className="p-1.5 rounded-lg bg-rose-500/20 text-rose-450 border border-rose-500/20 hover:bg-rose-500/35 cursor-pointer"
-                        title="Reject Invite"
+                        title="Reject"
                       >
                         <X className="w-3.5 h-3.5" />
                       </button>
@@ -904,7 +901,7 @@ export default function LiveTrackingPanel({ tripId }) {
                 <div className="w-5 h-5 border-2 border-violet-400 border-t-transparent rounded-full animate-spin" />
               </div>
             ) : sentInvites.length === 0 ? (
-              <p className="text-[11px] text-white/35 italic py-2 text-center">No invitations sent yet.</p>
+              <p className="text-[11px] text-white/30 italic py-2 text-center">No invitations sent.</p>
             ) : (
               <div className="space-y-2 max-h-40 overflow-y-auto custom-scrollbar">
                 {sentInvites.map((invite) => {
