@@ -34,12 +34,12 @@ CREATE TABLE IF NOT EXISTS public.chat_messages (
     sent_at timestamp with time zone DEFAULT now()
 );
 
--- Trip Invitations table
 CREATE TABLE IF NOT EXISTS public.trip_invitations (
     id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     trip_id bigint NOT NULL REFERENCES public.trips(id) ON DELETE CASCADE,
     inviter_username varchar NOT NULL,
     invitee_username varchar NOT NULL,
     status varchar NOT NULL, -- 'PENDING', 'ACCEPTED', 'REJECTED'
+    role varchar DEFAULT 'MEMBER', -- 'MEMBER', 'CO_OWNER'
     created_at timestamp with time zone DEFAULT now()
 );

@@ -84,6 +84,10 @@ public class TripInvitationRepositoryImpl {
         client.delete(TABLE, SupabaseRestClient.eq("id", invite.getId()));
     }
 
+    public void delete(Long id) {
+        client.delete(TABLE, SupabaseRestClient.eq("id", id));
+    }
+
     private TripInvitation mapToInvitation(Map<String, Object> map) {
         if (map == null) return null;
         TripInvitation invite = new TripInvitation();
@@ -92,6 +96,7 @@ public class TripInvitationRepositoryImpl {
         invite.setInviterUsername((String) map.get("inviter_username"));
         invite.setInviteeUsername((String) map.get("invitee_username"));
         invite.setStatus((String) map.get("status"));
+        invite.setRole(map.get("role") != null ? (String) map.get("role") : "MEMBER");
         invite.setCreatedAt(parseLocalDateTime(map.get("created_at")));
         return invite;
     }
@@ -99,24 +104,22 @@ public class TripInvitationRepositoryImpl {
     private Long toLong(Object val) {
         if (val == null) return null;
         if (val instanceof Number) return ((Number) val).longValue();
-        return Long.parseLong(val.toString());
+        try {
+            return Long.parseLong(val.toString());
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private LocalDateTime parseLocalDateTime(Object val) {
         if (val == null) return null;
-        String str = val.toString();
         try {
-            return LocalDateTime.parse(str);
+            return java.time.OffsetDateTime.parse(val.toString()).toLocalDateTime();
         } catch (Exception e) {
             try {
-                return java.time.OffsetDateTime.parse(str).toLocalDateTime();
+                return LocalDateTime.parse(val.toString());
             } catch (Exception ex) {
-                try {
-                    return java.time.ZonedDateTime.parse(str).toLocalDateTime();
-                } catch (Exception ex2) {
-                    String clean = str.replaceAll("([+-]\\d{2}:?\\d{2}|Z)$", "");
-                    return LocalDateTime.parse(clean);
-                }
+                return null;
             }
         }
     }

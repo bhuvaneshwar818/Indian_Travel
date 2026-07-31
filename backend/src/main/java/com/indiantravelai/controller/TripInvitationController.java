@@ -215,9 +215,120 @@ public class TripInvitationController {
         for (TripInvitation invite : accepts) {
             Optional<User> uOpt = userRepository.findByUsername(invite.getInviteeUsername());
             String fullName = uOpt.map(User::getFullName).orElse(invite.getInviteeUsername());
-            members.add(Map.of("username", invite.getInviteeUsername(), "fullName", fullName, "role", "MEMBER"));
+            members.add(Map.of(
+                "username", invite.getInviteeUsername(),
+                "fullName", fullName,
+                "role", invite.getRole() != null ? invite.getRole() : "MEMBER"
+            ));
         }
 
         return ResponseEntity.ok(members);
+    }
+
+    @PostMapping("/{tripId}/members/{username}/role")
+    public ResponseEntity<?> changeMemberRole(
+            @PathVariable Long tripId,
+            @PathVariable String username,
+            @RequestBody Map<String, String> body,
+            Principal principal) {
+        if (principal == null) return ResponseEntity.status(401).build();
+
+        Optional<Trip> tripOpt = tripRepository.findById(tripId);
+        if (tripOpt.isEmpty()) return ResponseEntity.notFound().build();
+        Trip trip = tripOpt.get();
+
+        // Only the main owner (trip creator) can change roles
+        Optional<User> creatorOpt = userRepository.findById(trip.getUserId());
+        if (creatorOpt.isEmpty() || !creatorOpt.get().getUsername().equalsIgnoreCase(principal.getName())) {
+            return ResponseEntity.status(403).body(Map.of("error", "Only the main owner can assign co-ownership."));
+        }
+
+        String newRole = body.get("role");
+        if (newRole == null || (!newRole.equals("CO_OWNER") && !newRole.equals("MEMBER"))) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Invalid role. Must be CO_OWNER or MEMBER."));
+        }
+
+        // Find the invitation for this member
+        List<TripInvitation> invites = invitationRepository.findByTripId(tripId);
+        TripInvitation targetInvite = invites.stream()
+                .filter(i -> i.getInviteeUsername().equalsIgnoreCase(username) && i.getStatus().equals("ACCEPTED"))
+                .findFirst()
+                .orElse(null);
+
+        if (targetInvite == null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "User is not a member of this trip."));
+        }
+
+        if (newRole.equals("CO_OWNER")) {
+            // Count current owners (main owner + accepted co-owners)
+            long currentOwnersCount = 1; // The main owner
+            currentOwnersCount += invites.stream()
+                    .filter(i -> i.getStatus().equals("ACCEPTED") && "CO_OWNER".equals(i.getRole()))
+                    .count();
+
+            if (currentOwnersCount >= 3) {
+                return ResponseEntity.badRequest().body(Map.of("error", "A trip can have at most 3 owners."));
+            }
+        }
+
+        targetInvite.setRole(newRole);
+        invitationRepository.save(targetInvite);
+        return ResponseEntity.ok(Map.of("message", "Role updated successfully."));
+    }
+
+    @DeleteMapping("/{tripId}/members/{username}")
+    public ResponseEntity<?> removeMember(
+            @PathVariable Long tripId,
+            @PathVariable String username,
+            Principal principal) {
+        if (principal == null) return ResponseEntity.status(401).build();
+
+        Optional<Trip> tripOpt = tripRepository.findById(tripId);
+        if (tripOpt.isEmpty()) return ResponseEntity.notFound().build();
+        Trip trip = tripOpt.get();
+
+        Optional<User> creatorOpt = userRepository.findById(trip.getUserId());
+        String creatorName = creatorOpt.map(User::getUsername).orElse("");
+
+        boolean isMainOwner = creatorName.equalsIgnoreCase(principal.getName());
+        boolean isSelfRemoval = username.equalsIgnoreCase(principal.getName());
+
+        List<TripInvitation> invites = invitationRepository.findByTripId(tripId);
+        TripInvitation requesterInvite = invites.stream()
+                .filter(i -> i.getInviteeUsername().equalsIgnoreCase(principal.getName()) && i.getStatus().equals("ACCEPTED"))
+                .findFirst()
+                .orElse(null);
+
+        boolean isCoOwner = requesterInvite != null && "CO_OWNER".equals(requesterInvite.getRole());
+
+        // Find invitation to remove
+        TripInvitation targetInvite = invites.stream()
+                .filter(i -> i.getInviteeUsername().equalsIgnoreCase(username) && i.getStatus().equals("ACCEPTED"))
+                .findFirst()
+                .orElse(null);
+
+        if (targetInvite == null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Member not found."));
+        }
+
+        if (isMainOwner) {
+            if (isSelfRemoval) {
+                return ResponseEntity.badRequest().body(Map.of("error", "The main owner cannot leave the trip. Delete the trip instead."));
+            }
+        } else if (isCoOwner) {
+            if (creatorName.equalsIgnoreCase(username)) {
+                return ResponseEntity.status(403).body(Map.of("error", "You cannot remove the main owner."));
+            }
+            if ("CO_OWNER".equals(targetInvite.getRole())) {
+                return ResponseEntity.status(403).body(Map.of("error", "You cannot remove other co-owners. Only the main owner can."));
+            }
+        } else {
+            if (!isSelfRemoval) {
+                return ResponseEntity.status(403).body(Map.of("error", "You do not have permission to remove members."));
+            }
+        }
+
+        invitationRepository.delete(targetInvite.getId());
+        return ResponseEntity.ok(Map.of("message", isSelfRemoval ? "You left the trip." : "Member removed successfully."));
     }
 }

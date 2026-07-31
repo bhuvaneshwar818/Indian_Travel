@@ -8,6 +8,9 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
 import java.time.LocalDateTime;
@@ -28,6 +31,12 @@ public class LocationController {
     private final Map<String, String> sessionUsernames = new ConcurrentHashMap<>();
     // Map to link sessionId -> tripId
     private final Map<String, Long> sessionTripIds = new ConcurrentHashMap<>();
+
+    @GetMapping("/api/trips/{tripId}/tracking")
+    @ResponseBody
+    public Map<String, Map<String, Object>> getActiveTracking(@PathVariable Long tripId) {
+        return tripLocations.getOrDefault(tripId, new HashMap<>());
+    }
 
     @MessageMapping("/location/{tripId}")
     @SendTo("/topic/location/{tripId}")

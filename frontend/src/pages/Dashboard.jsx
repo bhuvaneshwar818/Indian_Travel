@@ -18,6 +18,7 @@ import IndiaInteractiveMap from '../components/map/IndiaInteractiveMap'
 import GoogleMapPanel from '../components/map/GoogleMapPanel'
 import WishlistPanel from '../components/wishlist/WishlistPanel'
 import { useThemeStore } from '../store/themeStore'
+import TravelCopilot from '../components/dashboard/TravelCopilot'
 import { useToastStore } from '../store/useToastStore'
 import { indianTravelData } from '../lib/indianTravelData'
 import { 
@@ -33,7 +34,7 @@ export default function Dashboard() {
   const { 
     preferences, fetchPreferences, routeData, fetchShortestRoute, 
     fetchScenicRoute, clearRouteData, weatherData, fetchWeather, 
-    expenses, fetchExpenses, fetchExpenseSummary 
+    expenses, fetchExpenses, fetchExpenseSummary, addExpense 
   } = useTripStore();
   
   // Legacy store to search destinations
@@ -794,6 +795,16 @@ export default function Dashboard() {
         </aside>
 
       </div>
+
+      {/* Floating AI Travel Copilot Assistant */}
+      <TravelCopilot
+        activeSection={activeSection}
+        setActiveSection={setActiveSection}
+        addPlaceToWishlist={addPlaceToWishlist}
+        addExpense={addExpense}
+        fetchExpenses={fetchExpenses}
+        fetchExpenseSummary={fetchExpenseSummary}
+      />
     </div>
   )
 }

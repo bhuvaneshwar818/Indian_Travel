@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { GlassCard } from '../ui/GlassCard'
-import { useAuthStore } from '../../store/authStore'
+import { useAuthStore, API_BASE } from '../../store/authStore'
 import { Send, Users, Sparkles, AlertCircle } from 'lucide-react'
 import axios from 'axios'
 
@@ -99,8 +99,15 @@ export default function GroupChat({ tripId }) {
 
     fetchHistory();
 
-    // 2. Establish Native STOMP WebSocket Connection
-    const wsUrl = "ws://localhost:8082/ws";
+    // Derive WebSocket URL from API_BASE to support local IP & production URLs
+    let wsUrl = "ws://localhost:8082/ws";
+    try {
+      const url = new URL(API_BASE);
+      const wsProtocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
+      wsUrl = `${wsProtocol}//${url.host}/ws`;
+    } catch (e) {
+      console.warn("Failed to parse API_BASE for WebSocket URL, using fallback", e);
+    }
     const client = new NativeStompClient(wsUrl, token);
     stompClientRef.current = client;
 

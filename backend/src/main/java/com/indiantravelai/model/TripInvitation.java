@@ -10,6 +10,7 @@ public class TripInvitation {
     private String inviterUsername;
     private String inviteeUsername;
     private String status; // PENDING, ACCEPTED, REJECTED
+    private String role = "MEMBER"; // MEMBER, CO_OWNER
     private LocalDateTime createdAt = LocalDateTime.now();
 
     public TripInvitation() {}
@@ -19,6 +20,7 @@ public class TripInvitation {
         this.inviterUsername = inviterUsername;
         this.inviteeUsername = inviteeUsername;
         this.status = status;
+        this.role = "MEMBER";
     }
 
     public Long getId() { return id; }
@@ -35,6 +37,9 @@ public class TripInvitation {
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+
+    public String getRole() { return role; }
+    public void setRole(String role) { this.role = role; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
