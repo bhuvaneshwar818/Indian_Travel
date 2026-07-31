@@ -485,6 +485,39 @@ export default function LiveTrackingPanel({ tripId }) {
 
     const trackedUsers = Object.keys(activeTrackingData)
 
+    // Detect coordinate duplicates and group them (Ludo token spiderfying)
+    const coordGroups = {}
+    trackedUsers.forEach((usrName) => {
+      const loc = activeTrackingData[usrName]
+      const key = `${loc.lat.toFixed(6)},${loc.lng.toFixed(6)}`
+      if (!coordGroups[key]) {
+        coordGroups[key] = []
+      }
+      coordGroups[key].push(usrName)
+    })
+
+    const adjustedPositions = {}
+    Object.keys(coordGroups).forEach((key) => {
+      const usersInGroup = coordGroups[key]
+      const count = usersInGroup.length
+
+      if (count === 1) {
+        const usrName = usersInGroup[0]
+        const loc = activeTrackingData[usrName]
+        adjustedPositions[usrName] = { lat: loc.lat, lng: loc.lng }
+      } else {
+        // Multi-marker group (Ludo offset layout)
+        usersInGroup.forEach((usrName, index) => {
+          const loc = activeTrackingData[usrName]
+          const offsetRadius = 0.00008 // approx 8-9 meters offset to separate visually
+          const angle = (index * 2 * Math.PI) / count
+          const offsetLat = loc.lat + offsetRadius * Math.sin(angle)
+          const offsetLng = loc.lng + offsetRadius * Math.cos(angle)
+          adjustedPositions[usrName] = { lat: offsetLat, lng: offsetLng }
+        })
+      }
+    })
+
     // 2. Remove markers for users no longer active or available
     Object.keys(markersRef.current).forEach((usrName) => {
       if (!trackedUsers.includes(usrName)) {
@@ -496,7 +529,8 @@ export default function LiveTrackingPanel({ tripId }) {
     // 3. Render or update Ripple overlays
     trackedUsers.forEach((usrName) => {
       const loc = activeTrackingData[usrName]
-      const position = new window.google.maps.LatLng(loc.lat, loc.lng)
+      const pos = adjustedPositions[usrName]
+      const position = new window.google.maps.LatLng(pos.lat, pos.lng)
       const isSelf = usrName.toLowerCase() === user?.username?.toLowerCase()
       const pinColor = isSelf ? '#1A73E8' : '#8B5CF6' // Google Blue for self, Violet for buddies
 
@@ -593,6 +627,18 @@ export default function LiveTrackingPanel({ tripId }) {
       }
     }
   }, [])
+
+  const onlineCount = teamMembers.filter(member => {
+    const isSelf = member.username?.toLowerCase() === user?.username?.toLowerCase()
+    return !!memberLocations[member.username] || (isSelf && !!myCoords)
+  }).length
+
+  const onMapCount = teamMembers.filter(member => {
+    const isSelf = member.username?.toLowerCase() === user?.username?.toLowerCase()
+    if (isSelf) return !!myCoords
+    const loc = memberLocations[member.username]
+    return loc && loc.lat !== null && loc.lng !== null
+  }).length
 
   return (
     <div className="space-y-6 text-left max-w-4xl mx-auto">
@@ -810,6 +856,29 @@ export default function LiveTrackingPanel({ tripId }) {
         {/* RIGHT COLUMN: Invites & Actions Panel (4 Cols) */}
         <div className="lg:col-span-4 space-y-6">
           
+          {/* TEAM STATUS PANEL */}
+          <GlassCard className="p-5 bg-white/[0.02] border-white/5 space-y-4">
+            <h3 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+              <Users className="w-4 h-4 text-violet-400" />
+              <span>Team Status</span>
+            </h3>
+            
+            <div className="grid grid-cols-3 gap-2 text-center">
+              <div className="p-3.5 rounded-xl border border-white/5 bg-white/[0.01]">
+                <p className="text-lg font-black text-white">{teamMembers.length}</p>
+                <p className="text-[9px] font-bold text-white/40 uppercase tracking-wider mt-1">Total</p>
+              </div>
+              <div className="p-3.5 rounded-xl border border-white/5 bg-white/[0.01]">
+                <p className="text-lg font-black text-emerald-400">{onlineCount}</p>
+                <p className="text-[9px] font-bold text-emerald-400/50 uppercase tracking-wider mt-1">Online</p>
+              </div>
+              <div className="p-3.5 rounded-xl border border-white/5 bg-white/[0.01]">
+                <p className="text-lg font-black text-violet-400">{onMapCount}</p>
+                <p className="text-[9px] font-bold text-violet-400/50 uppercase tracking-wider mt-1">On Map</p>
+              </div>
+            </div>
+          </GlassCard>
+
           {/* INVITE FORM */}
           <GlassCard className="p-5 bg-white/[0.02] border-white/5 space-y-4">
             <h3 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
