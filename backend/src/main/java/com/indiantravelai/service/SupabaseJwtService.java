@@ -46,6 +46,8 @@ public class SupabaseJwtService {
             Claims claims = validateAndExtract(token);
             return claims.getExpiration().after(new Date());
         } catch (Exception e) {
+            System.err.println("Supabase JWT Validation Failed: " + e.getMessage());
+            e.printStackTrace();
             return false;
         }
     }
