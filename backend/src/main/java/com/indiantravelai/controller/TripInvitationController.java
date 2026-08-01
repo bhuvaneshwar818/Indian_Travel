@@ -1,5 +1,6 @@
 package com.indiantravelai.controller;
 
+import com.indiantravelai.config.SupabaseRestClient;
 import com.indiantravelai.entity.Trip;
 import com.indiantravelai.entity.User;
 import com.indiantravelai.model.TripInvitation;
@@ -38,6 +39,9 @@ public class TripInvitationController {
 
     @Autowired
     private EmailService emailService;
+
+    @Autowired
+    private SupabaseRestClient client;
 
     @Value("${app.frontend.url:https://indian-travel-self.vercel.app}")
     private String frontendUrl;
@@ -126,6 +130,31 @@ public class TripInvitationController {
             log.error("[TripInvitation] Error sending invitation: {}", e.getMessage(), e);
             return ResponseEntity.ok().body(Map.of("error", "Failed to send invitation. Please try again."));
         }
+    }
+
+    // DEBUG endpoint - remove after testing
+    @GetMapping("/debug/email/{email}")
+    public ResponseEntity<?> debugEmailLookup(@PathVariable String email) {
+        log.info("[DEBUG] Looking up email: {}", email);
+        
+        // Try findByEmail
+        Optional<User> byEmail = userRepository.findByEmail(email);
+        log.info("[DEBUG] findByEmail result: {}", byEmail.isPresent() ? byEmail.get().getUsername() : "NOT FOUND");
+        
+        // Try raw Supabase query
+        List<Map<String, Object>> rawResults = client.select("users", "*", "email=eq." + email);
+        log.info("[DEBUG] Raw Supabase query results: {}", rawResults.size());
+        
+        Map<String, Object> debug = new HashMap<>();
+        debug.put("email", email);
+        debug.put("findByEmailFound", byEmail.isPresent());
+        debug.put("findByEmailUsername", byEmail.map(User::getUsername).orElse(null));
+        debug.put("rawQueryCount", rawResults.size());
+        if (!rawResults.isEmpty()) {
+            debug.put("rawQueryFirstResult", rawResults.get(0));
+        }
+        
+        return ResponseEntity.ok(debug);
     }
 
     @GetMapping("/invitations")

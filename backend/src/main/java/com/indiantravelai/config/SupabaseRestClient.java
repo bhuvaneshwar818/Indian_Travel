@@ -14,8 +14,6 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 @Component
@@ -65,14 +63,37 @@ public class SupabaseRestClient {
     }
 
     public List<Map<String, Object>> select(String table, String select, String filter) {
-        String url = baseUrl() + "/" + table + "?select=" + select;
+        // Build URL with proper encoding using UriComponentsBuilder
+        String baseUrlStr = baseUrl() + "/" + table;
+        org.springframework.web.util.UriComponentsBuilder builder = 
+            org.springframework.web.util.UriComponentsBuilder.fromHttpUrl(baseUrlStr)
+                .queryParam("select", select);
+        
+        // Parse and add filter parameters
         if (filter != null && !filter.isEmpty()) {
-            url += "&" + filter;
+            String[] parts = filter.split("&");
+            for (String part : parts) {
+                int eqIdx = part.indexOf("=eq.");
+                if (eqIdx > 0) {
+                    String col = part.substring(0, eqIdx);
+                    String val = part.substring(eqIdx + 4); // skip "=eq."
+                    builder.queryParam(col, "eq." + val);
+                } else {
+                    // For non-eq filters, add as-is
+                    int equalsIdx = part.indexOf("=");
+                    if (equalsIdx > 0) {
+                        builder.queryParam(part.substring(0, equalsIdx), part.substring(equalsIdx + 1));
+                    }
+                }
+            }
         }
-        log.info("[Supabase] SELECT {} filter={}", table, filter);
+        
+        // Build URI and use it directly to avoid RestTemplate re-encoding
+        java.net.URI uri = builder.build().toUri();
+        log.info("[Supabase] SELECT {} uri={}", table, uri);
         HttpHeaders h = headers();
         HttpEntity<Void> req = new HttpEntity<>(h);
-        ResponseEntity<String> resp = restTemplate.exchange(url, HttpMethod.GET, req, String.class);
+        ResponseEntity<String> resp = restTemplate.exchange(uri, HttpMethod.GET, req, String.class);
         if (!resp.getStatusCode().is2xxSuccessful()) {
             log.error("[Supabase] SELECT failed with status: {} and body: {}", resp.getStatusCode(), resp.getBody());
             return Collections.emptyList();
@@ -165,10 +186,9 @@ public class SupabaseRestClient {
         }
     }
 
-    // Utility: build eq filter with URL encoding for special characters like @
+    // Utility: build eq filter
     public static String eq(String col, Object val) {
-        String encoded = URLEncoder.encode(String.valueOf(val), StandardCharsets.UTF_8);
-        return col + "=eq." + encoded;
+        return col + "=eq." + val;
     }
 
     // Utility: build ilike filter (exact case-insensitive)
