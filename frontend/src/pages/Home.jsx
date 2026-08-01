@@ -30,9 +30,6 @@ export default function Home() {
       {/* Infinite scrolling feedback reviews & user form submissions */}
       <Reviews />
 
-      {/* Accordions styled FAQs */}
-      <FAQ />
-
       {/* E2E validated inquiry support form */}
       <Contact />
 

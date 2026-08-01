@@ -583,33 +583,7 @@ export default function SearchDropdowns() {
   // Floating cursor tooltip state
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
 
-  // Ref + state to lock right panel height to left column height
   const leftColRef = React.useRef(null)
-  const [rightPanelHeight, setRightPanelHeight] = useState(null)
-
-  // Observe left column height changes and sync right panel (only on desktop screen sizes)
-  useEffect(() => {
-    const el = leftColRef.current
-    if (!el) return
-    
-    const handleResize = () => {
-      if (window.innerWidth >= 1024) {
-        setRightPanelHeight(el.offsetHeight)
-      } else {
-        setRightPanelHeight(null) // Reset height style on mobile
-      }
-    }
-    
-    const observer = new ResizeObserver(handleResize)
-    observer.observe(el)
-    handleResize()
-    
-    window.addEventListener('resize', handleResize)
-    return () => {
-      observer.disconnect()
-      window.removeEventListener('resize', handleResize)
-    }
-  }, [])
 
   // Fetch wishlist on mount
   useEffect(() => {
@@ -878,11 +852,8 @@ export default function SearchDropdowns() {
 
           </div>
 
-          {/* Right Column: Matched Sights — height locked to left column via JS ref */}
-          <div
-            className="flex-1 flex flex-col gap-4 text-left"
-            style={{ height: rightPanelHeight ? `${rightPanelHeight}px` : 'auto' }}
-          >
+          {/* Right Column: Matched Sights */}
+          <div className="flex-1 flex flex-col gap-4 text-left h-auto lg:h-[700px]">
             
             {/* Sights Header Panel */}
             <div className="flex-shrink-0 flex justify-between items-center bg-white/40 dark:bg-slate-900/20 p-4 rounded-2xl border border-slate-200/30 dark:border-slate-800/20 shadow-sm flex-wrap gap-4">
