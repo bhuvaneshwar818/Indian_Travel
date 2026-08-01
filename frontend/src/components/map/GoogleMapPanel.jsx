@@ -357,7 +357,6 @@ export default function GoogleMapPanel({
           gestureHandling: 'cooperative',
           rotateControl: true,
           tiltControl: true,
-          mapId: 'DEMO_MAP_ID',
           renderingType: 'VECTOR',
           styles: isDarkMode ? DARK_MAP_STYLES : []
         });
@@ -1704,21 +1703,12 @@ export default function GoogleMapPanel({
         console.error("Direct OWM coordinates fetch failed:", err);
       }
 
-      // Create marker using AdvancedMarkerElement
-      let tempMarker;
-      if (window.google && window.google.maps && window.google.maps.marker && window.google.maps.marker.AdvancedMarkerElement) {
-        tempMarker = new window.google.maps.marker.AdvancedMarkerElement({
-          position: { lat, lng },
-          map: map,
-          title: placeName
-        });
-      } else {
-        tempMarker = new window.google.maps.Marker({
-          position: { lat, lng },
-          map: map,
-          title: placeName
-        });
-      }
+      // Create marker using legacy Marker (to support local Map styling)
+      let tempMarker = new window.google.maps.Marker({
+        position: { lat, lng },
+        map: map,
+        title: placeName
+      });
       tempMarkerRef.current = tempMarker;
 
       const popupDiv = document.createElement('div');
