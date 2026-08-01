@@ -721,9 +721,9 @@ export default function SearchDropdowns() {
           <h2 className="text-3xl sm:text-5xl font-display font-extrabold text-slate-900 dark:text-white">
             Search by <span className="bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">Interactive Explorer</span>
           </h2>
-          <p className="mt-4 text-slate-600 dark:text-slate-350 font-medium">
+          {/* <p className="mt-4 text-slate-600 dark:text-slate-350 font-medium">
             Select parameters from the dropdown, or click directly on the interactive India map to explore famous attractions and matched destinations.
-          </p>
+          </p> */}
         </div>
 
         {/* COMBINED SPLIT HALF-SCREEN PANEL */}
@@ -767,7 +767,7 @@ export default function SearchDropdowns() {
 
               </div>
 
-              {/* AI Suggestion Chips */}
+              {/* AI Suggestion Chips
               <div className="mt-5 pt-4 border-t border-slate-200/50 dark:border-slate-800/40 text-left flex flex-col gap-2">
                 <div className="flex items-center gap-1 text-[11px] font-extrabold text-primary uppercase tracking-wider">
                   <Sparkles className="w-3.5 h-3.5 text-primary animate-pulse-glow" />
@@ -783,7 +783,7 @@ export default function SearchDropdowns() {
                     </span>
                   ))}
                 </div>
-              </div>
+              </div> */}
             </div>
 
             {/* Map wrapper — restored to original aspect-square */}
@@ -861,7 +861,7 @@ export default function SearchDropdowns() {
                 <h3 className="text-2xl font-display font-extrabold text-slate-900 dark:text-white">
                   Matched Sights <span className="text-primary-light">({displayedDestinations.length})</span>
                 </h3>
-                <p className="text-xs text-slate-400 font-semibold mt-1">Instant database queries filtered by your selections.</p>
+                {/* <p className="text-xs text-slate-400 font-semibold mt-1">Instant database queries filtered by your selections.</p> */}
               </div>
               
               {state !== "all" && (

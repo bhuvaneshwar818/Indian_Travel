@@ -80,10 +80,10 @@ export default function PopularDestinations() {
         {/* Carousel Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6 mb-12">
           <div className="text-left max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-purple-50 text-primary border border-purple-100 mb-4 dark:bg-purple-950/20 dark:text-purple-300 dark:border-purple-900/30">
+            {/* <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-purple-50 text-primary border border-purple-100 mb-4 dark:bg-purple-950/20 dark:text-purple-300 dark:border-purple-900/30">
               <Sparkles className="w-4 h-4 text-primary animate-pulse-glow" />
               <span className="text-xs font-bold uppercase tracking-wider">Top Rated Vacations</span>
-            </div>
+            </div> */}
             <h2 className="text-3xl sm:text-5xl font-display font-extrabold text-slate-900 dark:text-white leading-tight">
               Popular <span className="bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">Destinations</span>
             </h2>

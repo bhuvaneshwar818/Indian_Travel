@@ -79,10 +79,10 @@ export default function Reviews() {
         {/* Section Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6 mb-16">
           <div className="text-left max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-purple-50 text-primary border border-purple-100 mb-4 dark:bg-purple-950/20 dark:text-purple-300 dark:border-purple-900/30">
+            {/* <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-purple-50 text-primary border border-purple-100 mb-4 dark:bg-purple-950/20 dark:text-purple-300 dark:border-purple-900/30">
               <MessageSquare className="w-4.5 h-4.5 text-primary" />
               <span className="text-xs font-bold uppercase tracking-wider">User Testimonials</span>
-            </div>
+            </div> */}
             <h2 className="text-3xl sm:text-5xl font-display font-extrabold text-slate-900 dark:text-white leading-tight">
               What Our <span className="bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">Travelers Say</span>
             </h2>
