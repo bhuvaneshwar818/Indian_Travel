@@ -42,7 +42,7 @@ const FEATURE_LIST = [
 
 export default function Features() {
   return (
-    <section className="py-24 bg-slate-50 dark:bg-[#0A0516] relative overflow-hidden">
+    <section id="ai-planner" className="py-24 bg-slate-50 dark:bg-[#0A0516] relative overflow-hidden">
       
       {/* Glow overlays */}
       <div className="neon-glow-circle w-[400px] h-[400px] bg-primary/10 top-1/3 -right-20"></div>

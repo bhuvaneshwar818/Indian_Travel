@@ -56,7 +56,7 @@ export default function PopularDestinations() {
   }
 
   const triggerStateSelection = (stateName) => {
-    const mapSection = document.getElementById('destinations')
+    const mapSection = document.getElementById('explore')
     if (mapSection) {
       mapSection.scrollIntoView({ behavior: 'smooth' })
       setTimeout(() => {
@@ -70,7 +70,7 @@ export default function PopularDestinations() {
   }
 
   return (
-    <section id="destinations-carousel" className="py-24 bg-white dark:bg-[#06020E] relative overflow-hidden">
+    <section id="destinations" className="py-24 bg-white dark:bg-[#06020E] relative overflow-hidden">
       
       {/* Background neon orbs */}
       <div className="neon-glow-circle w-[400px] h-[400px] bg-primary/10 bottom-0 left-0"></div>

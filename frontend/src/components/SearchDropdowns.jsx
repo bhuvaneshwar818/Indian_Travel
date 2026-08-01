@@ -735,7 +735,7 @@ export default function SearchDropdowns() {
   const displayedDestinations = getDynamicDestinations(state, category);
 
   return (
-    <section id="destinations" className="py-24 bg-slate-50 dark:bg-[#0A0516] relative overflow-hidden">
+    <section id="explore" className="py-24 bg-slate-50 dark:bg-[#0A0516] relative overflow-hidden">
       
       {/* Decorative Orbs */}
       <div className="neon-glow-circle w-[350px] h-[350px] bg-primary/10 top-10 right-10 animate-pulse-glow"></div>

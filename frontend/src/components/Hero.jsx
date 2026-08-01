@@ -61,7 +61,7 @@ export default function Hero() {
             onClick={() => handleScrollToSection('ai-planner')}
             className="clay-btn-primary px-8 py-4 text-base flex items-center gap-2 group w-full sm:w-auto"
           >
-            <span>Plan with AI Now</span>
+            <span>Plan AI Trip Now</span>
             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
           </button>
           
