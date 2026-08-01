@@ -2277,11 +2277,11 @@ export default function GoogleMapPanel({
         )}
       </div>
 
-      <div className="flex justify-between items-center text-[9px] text-white/40">
+      {/* <div className="flex justify-between items-center text-[9px] text-white/40">
         <span className="flex items-center gap-1">
           💡 Click anywhere on the map to drop custom stops directly into your wishlist
         </span>
-      </div>
+      </div> */}
     </GlassCard>
   )
 }
