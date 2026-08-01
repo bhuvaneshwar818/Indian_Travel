@@ -38,6 +38,7 @@ public class SecurityConfig {
         }
 
         http.authorizeHttpRequests(auth -> {
+            auth.requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll();
             auth.requestMatchers("/api/auth/session", "/api/auth/logout").permitAll();
             if (h2ConsoleEnabled) {
                 auth.requestMatchers("/h2-console/**").permitAll();
