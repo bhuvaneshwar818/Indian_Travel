@@ -9,6 +9,13 @@ export default function Signup() {
   const location = useLocation()
   const { signInWithGoogle } = useAuthStore()
 
+  // Parse referral params from URL
+  const searchParams = new URLSearchParams(location.search)
+  const referralType = searchParams.get('referral')
+  const referralTripId = searchParams.get('tripId')
+  const referralInviter = searchParams.get('inviter')
+  const referralTripTitle = searchParams.get('tripTitle')
+
   // Form Step
   const [step, setStep] = useState(1) // 1: Personal Info, 2: Account Setup
   const [isGoogleSignup, setIsGoogleSignup] = useState(false)
@@ -299,7 +306,7 @@ export default function Signup() {
     setIsRegistering(true)
     addToast('info', 'Creating account...')
     try {
-      await apiClient.post('/auth/signup/register', {
+      const response = await apiClient.post('/auth/signup/register', {
         fullName,
         age: parseInt(age),
         gender,
@@ -308,17 +315,65 @@ export default function Signup() {
         password
       })
       addToast('success', 'Account created successfully!')
-      // Clear State
-      setFullName('')
-      setAge('')
-      setGender('')
-      setEmail('')
-      setUsername('')
-      setPassword('')
-      setConfirmPassword('')
-      setTimeout(() => {
-        navigate('/login')
-      }, 1500)
+      
+      // If this is a trip referral, auto-login and accept invitation
+      if (referralType === 'trip' && referralTripId && referralInviter) {
+        try {
+          // Auto-login after registration
+          const loginResponse = await apiClient.post('/auth/login', {
+            username: username,
+            password: password
+          })
+          
+          const token = loginResponse.data.token || loginResponse.data.accessToken
+          const userData = loginResponse.data.user || loginResponse.data
+          
+          localStorage.setItem('token', token)
+          localStorage.setItem('user', JSON.stringify(userData))
+          
+          useAuthStore.setState({
+            user: userData,
+            token: token,
+            isAuthenticated: true,
+            loading: false
+          })
+          
+          // Find and accept the invitation
+          const invitationsResponse = await apiClient.get('/trips/invitations')
+          const pendingInvite = invitationsResponse.data.received?.find(
+            i => i.status === 'PENDING' && i.inviterUsername === referralInviter
+          )
+          
+          if (pendingInvite) {
+            await apiClient.post(`/trips/invitations/${pendingInvite.id}/accept`)
+            addToast('success', `Welcome! You've joined ${decodeURIComponent(referralTripTitle || 'the trip')}!`)
+          } else {
+            addToast('info', 'Account created! Check your Live Tracking for trip invitations.')
+          }
+          
+          setTimeout(() => {
+            navigate('/dashboard')
+          }, 1500)
+        } catch (loginErr) {
+          // If auto-login fails, just redirect to login
+          addToast('info', 'Account created! Please login to accept your trip invitation.')
+          setTimeout(() => {
+            navigate('/login')
+          }, 1500)
+        }
+      } else {
+        // Normal registration - redirect to login
+        setFullName('')
+        setAge('')
+        setGender('')
+        setEmail('')
+        setUsername('')
+        setPassword('')
+        setConfirmPassword('')
+        setTimeout(() => {
+          navigate('/login')
+        }, 1500)
+      }
     } catch (err) {
       const errMsg = err.response?.data?.error || 'Registration failed.'
       addToast('error', errMsg)
@@ -424,6 +479,23 @@ export default function Signup() {
                 </span>
               </Link>
             </div>
+
+            {/* Trip Referral Banner */}
+            {referralType === 'trip' && referralInviter && (
+              <div className="mb-4 p-4 bg-gradient-to-r from-violet-500/10 to-blue-500/10 border border-violet-500/20 rounded-xl">
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="w-2 h-2 bg-violet-500 rounded-full animate-pulse"></div>
+                  <span className="text-xs font-bold text-violet-600 dark:text-violet-400 uppercase tracking-wider">Trip Invitation</span>
+                </div>
+                <p className="text-sm text-slate-700 dark:text-slate-300">
+                  <span className="font-semibold">@{referralInviter}</span> invited you to join 
+                  <span className="font-semibold"> {decodeURIComponent(referralTripTitle || 'a trip')}</span>
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  Sign up to accept this invitation and start tracking together!
+                </p>
+              </div>
+            )}
 
             {/* Outer Premium Card container */}
             <div className="p-6 sm:p-8 bg-white/80 dark:bg-slate-900/60 shadow-xl border border-slate-200/50 dark:border-slate-800/40 rounded-3xl transition-all duration-300 hover:shadow-2xl hover:border-slate-250 dark:hover:border-slate-700/60 backdrop-blur-md">

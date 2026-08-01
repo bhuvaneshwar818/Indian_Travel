@@ -330,7 +330,17 @@ export default function LiveTrackingPanel({ tripId }) {
       if (res.data && res.data.error) {
         throw new Error(res.data.error)
       }
-      addToast(`Invitation sent to ${inviteUsername}!`, 'success')
+      
+      // Handle different response statuses
+      const status = res.data?.status
+      if (status === 'EMAIL_SENT') {
+        addToast(`Invitation email sent to ${inviteUsername}! They'll sign up and join your trip.`, 'success')
+      } else if (status === 'IN_APP') {
+        addToast(`Invitation sent to ${inviteUsername}! They'll see it in their requests.`, 'success')
+      } else {
+        addToast(`Invitation sent to ${inviteUsername}!`, 'success')
+      }
+      
       setInviteUsername('')
       fetchInvitations()
     } catch (err) {

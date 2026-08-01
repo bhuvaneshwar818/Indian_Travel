@@ -8,7 +8,10 @@ import com.indiantravelai.repository.TripRepositoryImpl;
 import com.indiantravelai.repository.UserRepositoryImpl;
 import com.indiantravelai.service.TripService;
 import com.indiantravelai.service.EmailService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,6 +21,8 @@ import java.util.*;
 @RestController
 @RequestMapping("/api/trips")
 public class TripInvitationController {
+
+    private static final Logger log = LoggerFactory.getLogger(TripInvitationController.class);
 
     @Autowired
     private TripInvitationRepositoryImpl invitationRepository;
@@ -34,6 +39,9 @@ public class TripInvitationController {
     @Autowired
     private EmailService emailService;
 
+    @Value("${app.frontend.url:https://indian-travel-self.vercel.app}")
+    private String frontendUrl;
+
     @PostMapping("/invite")
     public ResponseEntity<?> inviteFriend(@RequestBody Map<String, String> body, Principal principal) {
         if (principal == null) return ResponseEntity.status(401).build();
@@ -41,7 +49,7 @@ public class TripInvitationController {
         try {
             String inviteeInput = body.get("inviteeUsername");
             if (inviteeInput == null || inviteeInput.trim().isEmpty()) {
-                return ResponseEntity.ok().body(Map.of("error", "Invitee username or email is required"));
+                return ResponseEntity.ok().body(Map.of("error", "Invitee email is required"));
             }
 
             inviteeInput = inviteeInput.trim();
@@ -62,43 +70,60 @@ public class TripInvitationController {
                 return ResponseEntity.ok().body(Map.of("error", "Please provide a valid email address to send an invitation."));
             }
 
-            // Check if invitee email exists in the database
-            String inviteeEmail = inviteeInput.trim();
-            Optional<User> inviteeUser = userRepository.findByEmail(inviteeEmail);
-            if (inviteeUser.isEmpty()) {
-                // Also try finding by username in case user enters username
-                Optional<User> inviteeByUsername = userRepository.findByUsername(inviteeEmail);
-                if (inviteeByUsername.isEmpty()) {
-                    return ResponseEntity.ok().body(Map.of("error", "No user found with this email. Please ask them to sign up first."));
-                }
-            }
-
+            String inviteeEmail = inviteeInput.trim().toLowerCase();
             Trip activeTrip = tripService.getOrCreateActiveTrip(principal.getName());
-            String targetIdentifier = inviteeInput.toLowerCase();
+            String inviterFullName = currentUserOpt.map(User::getFullName).orElse(principal.getName());
 
-            // 3. Check if an invite already exists
+            // 2. Check if invitee email exists in the database
+            Optional<User> inviteeUser = userRepository.findByEmail(inviteeEmail);
+            boolean isRegisteredUser = inviteeUser.isPresent();
+
+            // 3. Check if an invite already exists for this trip
             List<TripInvitation> existing = invitationRepository.findByTripId(activeTrip.getId());
             boolean alreadyInvited = existing.stream()
-                    .anyMatch(i -> i.getInviteeUsername().equalsIgnoreCase(targetIdentifier) && !i.getStatus().equals("REJECTED"));
+                    .anyMatch(i -> i.getInviteeUsername().equalsIgnoreCase(inviteeEmail) && !i.getStatus().equals("REJECTED"));
 
             if (alreadyInvited) {
-                return ResponseEntity.ok().body(Map.of("error", "This email is already invited or a member of this trip."));
+                return ResponseEntity.ok().body(Map.of("error", "This email is already invited to this trip."));
             }
 
-            TripInvitation invitation = new TripInvitation(
-                    activeTrip.getId(),
+            if (isRegisteredUser) {
+                // CASE 1: User is signed up → Save invitation in DB (shows in-app)
+                TripInvitation invitation = new TripInvitation(
+                        activeTrip.getId(),
+                        principal.getName(),
+                        inviteeEmail,
+                        "PENDING"
+                );
+                invitationRepository.save(invitation);
+
+                return ResponseEntity.ok(Map.of(
+                    "message", "Invitation sent! They will see it in their Live Tracking requests.",
+                    "status", "IN_APP",
+                    "email", inviteeEmail
+                ));
+            } else {
+                // CASE 2: User is not signed up → Send email with signup link
+                String signupLink = frontendUrl + "/signup?referral=trip&tripId=" + activeTrip.getId()
+                        + "&inviter=" + principal.getName()
+                        + "&tripTitle=" + java.net.URLEncoder.encode(activeTrip.getTitle(), java.nio.charset.StandardCharsets.UTF_8);
+
+                emailService.sendTripSignupInvitationEmail(
+                    inviteeEmail,
                     principal.getName(),
-                    targetIdentifier,
-                    "PENDING"
-            );
+                    inviterFullName,
+                    activeTrip.getTitle(),
+                    signupLink
+                );
 
-            TripInvitation saved = invitationRepository.save(invitation);
-
-            // 4. Send email dispatch
-            emailService.sendTripInvitationEmail(targetIdentifier, principal.getName(), activeTrip.getTitle());
-
-            return ResponseEntity.ok(saved);
+                return ResponseEntity.ok(Map.of(
+                    "message", "Invitation email sent! They will sign up and join your trip.",
+                    "status", "EMAIL_SENT",
+                    "email", inviteeEmail
+                ));
+            }
         } catch (Exception e) {
+            log.error("[TripInvitation] Error sending invitation: {}", e.getMessage(), e);
             return ResponseEntity.ok().body(Map.of("error", "Failed to send invitation. Please try again."));
         }
     }

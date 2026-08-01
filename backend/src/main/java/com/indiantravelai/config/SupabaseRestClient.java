@@ -13,8 +13,9 @@ import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 @Component
@@ -64,11 +65,7 @@ public class SupabaseRestClient {
     }
 
     public List<Map<String, Object>> select(String table, String select, String filter) {
-        String baseUrl = baseUrl() + "/" + table;
-        String url = UriComponentsBuilder.fromHttpUrl(baseUrl)
-                .queryParam("select", select)
-                .build()
-                .toUriString();
+        String url = baseUrl() + "/" + table + "?select=" + select;
         if (filter != null && !filter.isEmpty()) {
             url += "&" + filter;
         }
@@ -168,16 +165,15 @@ public class SupabaseRestClient {
         }
     }
 
-    // Utility: build eq filter
+    // Utility: build eq filter with URL encoding for special characters like @
     public static String eq(String col, Object val) {
-        String encoded = java.net.URLEncoder.encode(val.toString(), java.nio.charset.StandardCharsets.UTF_8);
+        String encoded = URLEncoder.encode(String.valueOf(val), StandardCharsets.UTF_8);
         return col + "=eq." + encoded;
     }
 
     // Utility: build ilike filter (exact case-insensitive)
     public static String ilikeExact(String col, String val) {
-        String encoded = java.net.URLEncoder.encode(val, java.nio.charset.StandardCharsets.UTF_8);
-        return col + "=ilike." + encoded;
+        return col + "=ilike." + val;
     }
 
     // Utility: build ilike filter (partial match with wildcards)
