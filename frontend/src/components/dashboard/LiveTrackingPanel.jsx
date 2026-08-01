@@ -490,11 +490,7 @@ export default function LiveTrackingPanel({ tripId }) {
       if (!existingScript) {
         const script = document.createElement('script')
         script.id = 'google-maps-script'
-        const apiKey = localStorage.getItem('google_maps_api_key') || ''
-        if (!apiKey) {
-          setMapError('Google Maps API key not configured. Please set it in Settings.')
-          return
-        }
+        const apiKey = localStorage.getItem('google_maps_api_key') || 'AIzaSyDhYQ6CF0IECov4xy4KuVaGf0asW7O1XwM'
         script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`
         script.async = true
         script.defer = true

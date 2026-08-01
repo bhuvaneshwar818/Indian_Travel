@@ -63,37 +63,14 @@ public class SupabaseRestClient {
     }
 
     public List<Map<String, Object>> select(String table, String select, String filter) {
-        // Build URL with proper encoding using UriComponentsBuilder
-        String baseUrlStr = baseUrl() + "/" + table;
-        org.springframework.web.util.UriComponentsBuilder builder = 
-            org.springframework.web.util.UriComponentsBuilder.fromHttpUrl(baseUrlStr)
-                .queryParam("select", select);
-        
-        // Parse and add filter parameters
+        String url = baseUrl() + "/" + table + "?select=" + select;
         if (filter != null && !filter.isEmpty()) {
-            String[] parts = filter.split("&");
-            for (String part : parts) {
-                int eqIdx = part.indexOf("=eq.");
-                if (eqIdx > 0) {
-                    String col = part.substring(0, eqIdx);
-                    String val = part.substring(eqIdx + 4); // skip "=eq."
-                    builder.queryParam(col, "eq." + val);
-                } else {
-                    // For non-eq filters, add as-is
-                    int equalsIdx = part.indexOf("=");
-                    if (equalsIdx > 0) {
-                        builder.queryParam(part.substring(0, equalsIdx), part.substring(equalsIdx + 1));
-                    }
-                }
-            }
+            url += "&" + filter;
         }
-        
-        // Build URI and use it directly to avoid RestTemplate re-encoding
-        java.net.URI uri = builder.build().toUri();
-        log.info("[Supabase] SELECT {} uri={}", table, uri);
+        log.info("[Supabase] SELECT {} url={}", table, url);
         HttpHeaders h = headers();
         HttpEntity<Void> req = new HttpEntity<>(h);
-        ResponseEntity<String> resp = restTemplate.exchange(uri, HttpMethod.GET, req, String.class);
+        ResponseEntity<String> resp = restTemplate.exchange(url, HttpMethod.GET, req, String.class);
         if (!resp.getStatusCode().is2xxSuccessful()) {
             log.error("[Supabase] SELECT failed with status: {} and body: {}", resp.getStatusCode(), resp.getBody());
             return Collections.emptyList();
@@ -106,6 +83,7 @@ public class SupabaseRestClient {
                     results.add(mapper.convertValue(node, Map.class));
                 }
             }
+            log.info("[Supabase] SELECT {} found {} results", table, results.size());
             return results;
         } catch (Exception e) {
             log.error("[Supabase] Parse error: {}", e.getMessage());

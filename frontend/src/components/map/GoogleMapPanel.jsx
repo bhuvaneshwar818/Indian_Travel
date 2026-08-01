@@ -233,7 +233,7 @@ export default function GoogleMapPanel({
   
   // API Key state: automatically resolves from env or localStorage
   const [apiKey, setApiKey] = useState(() => {
-    return import.meta.env.VITE_GOOGLE_MAPS_API_KEY || localStorage.getItem('gmaps_api_key') || '';
+    return import.meta.env.VITE_GOOGLE_MAPS_API_KEY || localStorage.getItem('gmaps_api_key') || 'AIzaSyDhYQ6CF0IECov4xy4KuVaGf0asW7O1XwM';
   });
   const [inputKey, setInputKey] = useState('');
 
