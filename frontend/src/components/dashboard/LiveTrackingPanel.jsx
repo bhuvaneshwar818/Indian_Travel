@@ -448,24 +448,49 @@ export default function LiveTrackingPanel({ tripId }) {
       return
     }
 
-    if (window.google && window.google.maps && mapContainerRef.current && !mapInstanceRef.current) {
-      const initialCenter = myCoords || { lat: 20.5937, lng: 78.9629 }
-      const initMap = new window.google.maps.Map(mapContainerRef.current, {
-        center: initialCenter,
-        zoom: myCoords ? 13 : 5,
-        styles: MAP_STYLES,
-        mapTypeControl: false,
-        streetViewControl: false,
-        fullscreenControl: false
-      })
-      mapInstanceRef.current = initMap
+    const initMap = () => {
+      if (window.google && window.google.maps && mapContainerRef.current && !mapInstanceRef.current) {
+        const initialCenter = myCoords || { lat: 20.5937, lng: 78.9629 }
+        const map = new window.google.maps.Map(mapContainerRef.current, {
+          center: initialCenter,
+          zoom: myCoords ? 13 : 5,
+          styles: MAP_STYLES,
+          mapTypeControl: false,
+          streetViewControl: false,
+          fullscreenControl: false
+        })
+        mapInstanceRef.current = map
 
-      // Create class reference if window.google is ready
-      if (!RippleOverlayClassRef.current) {
-        RippleOverlayClassRef.current = createRippleOverlayClass(window.google, user?.username)
+        // Create class reference if window.google is ready
+        if (!RippleOverlayClassRef.current) {
+          RippleOverlayClassRef.current = createRippleOverlayClass(window.google, user?.username)
+        }
       }
     }
-  }, [myCoords, activeSubTab])
+
+    if (window.google && window.google.maps) {
+      initMap()
+    } else {
+      // Load Google Maps script if not already loaded
+      const existingScript = document.getElementById('google-maps-script')
+      if (!existingScript) {
+        const script = document.createElement('script')
+        script.id = 'google-maps-script'
+        // Using a public key or fetching from local storage as fallback (assuming API key is handled by the app)
+        const apiKey = localStorage.getItem('google_maps_api_key') || ''
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`
+        script.async = true
+        script.defer = true
+        script.onload = () => {
+          initMap()
+        }
+        document.head.appendChild(script)
+      } else {
+        existingScript.addEventListener('load', initMap)
+        return () => existingScript.removeEventListener('load', initMap)
+      }
+    }
+  }, [myCoords, activeSubTab, user?.username])
 
   // Recenter/Fit Bounds manually or on initial load
   const recenterMap = () => {
@@ -1034,15 +1059,15 @@ export default function LiveTrackingPanel({ tripId }) {
               
               <form onSubmit={handleSendInvite} className="flex gap-2">
                 <input
-                  type="text"
+                  type="email"
                   value={inviteUsername}
                   onChange={(e) => setInviteUsername(e.target.value)}
-                  placeholder="Username or Email address"
+                  placeholder="Email address"
                   className="flex-grow glass-input text-xs"
                 />
                 <button
                   type="submit"
-                  disabled={submittingInvite || !inviteUsername.trim()}
+                  disabled={submittingInvite || !inviteUsername.trim() || !inviteUsername.includes('@')}
                   className="px-3 rounded-xl bg-violet-650 hover:bg-violet-750 text-white flex items-center justify-center disabled:opacity-50 cursor-pointer"
                 >
                   {submittingInvite ? (

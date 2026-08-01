@@ -56,37 +56,21 @@ public class TripInvitationController {
             return ResponseEntity.badRequest().body(Map.of("error", "You cannot invite yourself!"));
         }
 
-        // 2. Try to find the user in Supabase (by username OR email)
-        Optional<User> inviteeOpt = userRepository.findByUsername(inviteeInput);
-        if (inviteeOpt.isEmpty()) {
-            inviteeOpt = userRepository.findByEmail(inviteeInput);
+        // Ensure input is an email address
+        if (!inviteeInput.contains("@") || !inviteeInput.contains(".")) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Please provide a valid email address to send an invitation."));
         }
 
         Trip activeTrip = tripService.getOrCreateActiveTrip(principal.getName());
-        String targetIdentifier;
-        boolean isUnregisteredEmail = false;
-
-        if (inviteeOpt.isPresent()) {
-            // User is already registered on Supabase
-            targetIdentifier = inviteeOpt.get().getUsername();
-        } else {
-            // User is not found by username or email. Check if the input is a valid email pattern
-            if (inviteeInput.contains("@") && inviteeInput.contains(".")) {
-                targetIdentifier = inviteeInput; // Use the email directly
-                isUnregisteredEmail = true;
-            } else {
-                return ResponseEntity.badRequest().body(Map.of("error", "User '" + inviteeInput + "' does not exist. Please enter their registered username or a valid email address to invite them."));
-            }
-        }
+        String targetIdentifier = inviteeInput;
 
         // 3. Check if an invite already exists
         List<TripInvitation> existing = invitationRepository.findByTripId(activeTrip.getId());
-        final String finalTarget = targetIdentifier;
         boolean alreadyInvited = existing.stream()
-                .anyMatch(i -> i.getInviteeUsername().equalsIgnoreCase(finalTarget) && !i.getStatus().equals("REJECTED"));
+                .anyMatch(i -> i.getInviteeUsername().equalsIgnoreCase(targetIdentifier) && !i.getStatus().equals("REJECTED"));
 
         if (alreadyInvited) {
-            return ResponseEntity.badRequest().body(Map.of("error", "This user is already invited or a member of this trip."));
+            return ResponseEntity.badRequest().body(Map.of("error", "This email is already invited or a member of this trip."));
         }
 
         TripInvitation invitation = new TripInvitation(
@@ -99,15 +83,7 @@ public class TripInvitationController {
         TripInvitation saved = invitationRepository.save(invitation);
 
         // 4. Send email dispatch
-        if (isUnregisteredEmail) {
-            emailService.sendTripInvitationEmail(targetIdentifier, principal.getName(), activeTrip.getTitle());
-        } else {
-            // Also send email to registered user if their email is available
-            String registeredEmail = inviteeOpt.get().getEmail();
-            if (registeredEmail != null && !registeredEmail.isEmpty()) {
-                emailService.sendTripInvitationEmail(registeredEmail, principal.getName(), activeTrip.getTitle());
-            }
-        }
+        emailService.sendTripInvitationEmail(targetIdentifier, principal.getName(), activeTrip.getTitle());
 
         return ResponseEntity.ok(saved);
     }

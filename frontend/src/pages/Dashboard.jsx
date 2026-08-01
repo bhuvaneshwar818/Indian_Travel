@@ -766,7 +766,15 @@ export default function Dashboard() {
           )}
 
           {activeSection === 'tracking' && (
-            <LiveTrackingPanel tripId={wishlist[0]?.tripId} />
+            <div className="max-w-4xl mx-auto">
+              {wishlist.length > 0 ? (
+                <LiveTrackingPanel tripId={wishlist[0]?.tripId} />
+              ) : (
+                <div className="p-6 text-center text-xs text-white/40 bg-slate-950/40 rounded-2xl border border-white/10 backdrop-blur-md">
+                  Create a wishlist to open your Live Tracking workspace.
+                </div>
+              )}
+            </div>
           )}
 
         </main>
