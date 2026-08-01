@@ -233,12 +233,11 @@ export default function GoogleMapPanel({
   
   // API Key state: automatically resolves from env or localStorage
   const [apiKey, setApiKey] = useState(() => {
-    return import.meta.env.VITE_GOOGLE_MAPS_API_KEY || localStorage.getItem('gmaps_api_key') || 'AIzaSyDhYQ6CF0IECov4xy4KuVaGf0asW7O1XwM';
+    return import.meta.env.VITE_GOOGLE_MAPS_API_KEY || localStorage.getItem('gmaps_api_key') || '';
   });
   const [inputKey, setInputKey] = useState('');
 
   const [googleMapsLoaded, setGoogleMapsLoaded] = useState(false);
-  const [mapLoadError, setMapLoadError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeLayer, setActiveLayer] = useState('street'); // street or satellite
   const [isSearching, setIsSearching] = useState(false);
@@ -292,13 +291,11 @@ export default function GoogleMapPanel({
   useEffect(() => {
     if (!apiKey) {
       setGoogleMapsLoaded(false);
-      setMapLoadError('Google Maps API key not configured. Please set it in Settings.');
       return;
     }
 
     if (window.google && window.google.maps && window.google.maps.Map) {
       setGoogleMapsLoaded(true);
-      setMapLoadError(null);
       return;
     }
 
@@ -310,7 +307,6 @@ export default function GoogleMapPanel({
       script.remove();
       script = null;
       setGoogleMapsLoaded(false);
-      setMapLoadError(null);
       if (mapInstanceRef.current) mapInstanceRef.current = null;
     }
 
@@ -325,23 +321,18 @@ export default function GoogleMapPanel({
         const checkMap = () => {
           if (window.google && window.google.maps && window.google.maps.Map) {
             setGoogleMapsLoaded(true);
-            setMapLoadError(null);
           } else {
             setTimeout(checkMap, 50);
           }
         };
         checkMap();
       };
-      script.onerror = () => {
-        console.error("Failed to load Google Maps script");
-        setMapLoadError('Failed to load Google Maps. Please check your API key.');
-      };
+      script.onerror = () => console.error("Failed to load Google Maps script");
       document.head.appendChild(script);
     } else {
       const checkMap = () => {
         if (window.google && window.google.maps && window.google.maps.Map) {
           setGoogleMapsLoaded(true);
-          setMapLoadError(null);
         } else {
           setTimeout(checkMap, 50);
         }
@@ -366,6 +357,7 @@ export default function GoogleMapPanel({
           gestureHandling: 'cooperative',
           rotateControl: true,
           tiltControl: true,
+          mapId: 'DEMO_MAP_ID',
           renderingType: 'VECTOR',
           styles: isDarkMode ? DARK_MAP_STYLES : []
         });
@@ -1712,12 +1704,21 @@ export default function GoogleMapPanel({
         console.error("Direct OWM coordinates fetch failed:", err);
       }
 
-      // Create marker using legacy Marker (to support local Map styling)
-      let tempMarker = new window.google.maps.Marker({
-        position: { lat, lng },
-        map: map,
-        title: placeName
-      });
+      // Create marker using AdvancedMarkerElement
+      let tempMarker;
+      if (window.google && window.google.maps && window.google.maps.marker && window.google.maps.marker.AdvancedMarkerElement) {
+        tempMarker = new window.google.maps.marker.AdvancedMarkerElement({
+          position: { lat, lng },
+          map: map,
+          title: placeName
+        });
+      } else {
+        tempMarker = new window.google.maps.Marker({
+          position: { lat, lng },
+          map: map,
+          title: placeName
+        });
+      }
       tempMarkerRef.current = tempMarker;
 
       const popupDiv = document.createElement('div');
@@ -2096,31 +2097,8 @@ export default function GoogleMapPanel({
         id="google-map-container"
         className="w-full h-[350px] md:h-[calc(100vh-240px)] md:min-h-[550px] rounded-xl overflow-hidden border border-slate-200 dark:border-white/10 shadow-inner bg-slate-100/60 dark:bg-slate-900/60 relative z-10 flex items-center justify-center"
       >
-        {/* Map Canvas Div or Error */}
-        {mapLoadError ? (
-          <div className="flex flex-col items-center justify-center gap-4 p-6 text-center">
-            <div className="w-16 h-16 rounded-full bg-rose-500/20 flex items-center justify-center">
-              <MapPin className="w-8 h-8 text-rose-400" />
-            </div>
-            <div>
-              <h3 className="text-sm font-bold text-slate-800 dark:text-white mb-2">Map Unavailable</h3>
-              <p className="text-xs text-slate-500 dark:text-white/50 max-w-xs">{mapLoadError}</p>
-            </div>
-            <button
-              onClick={() => {
-                setMapLoadError(null);
-                setApiKey('');
-                setTimeout(() => {
-                  const savedKey = localStorage.getItem('gmaps_api_key') || '';
-                  setApiKey(savedKey);
-                }, 100);
-              }}
-              className="px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold cursor-pointer"
-            >
-              Retry
-            </button>
-          </div>
-        ) : apiKey && (
+        {/* Map Canvas Div - Google Maps will replace contents of this div only */}
+        {apiKey && (
           <div ref={mapRef} className="w-full h-full absolute inset-0 z-0" />
         )}
 

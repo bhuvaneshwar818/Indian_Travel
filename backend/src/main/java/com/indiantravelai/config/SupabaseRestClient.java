@@ -67,14 +67,10 @@ public class SupabaseRestClient {
         if (filter != null && !filter.isEmpty()) {
             url += "&" + filter;
         }
-        log.info("[Supabase] SELECT {} url={}", table, url);
+        log.info("[Supabase] SELECT {} filter={}", table, filter);
         HttpHeaders h = headers();
         HttpEntity<Void> req = new HttpEntity<>(h);
         ResponseEntity<String> resp = restTemplate.exchange(url, HttpMethod.GET, req, String.class);
-        if (!resp.getStatusCode().is2xxSuccessful()) {
-            log.error("[Supabase] SELECT failed with status: {} and body: {}", resp.getStatusCode(), resp.getBody());
-            return Collections.emptyList();
-        }
         try {
             JsonNode arr = mapper.readTree(resp.getBody());
             List<Map<String, Object>> results = new ArrayList<>();
@@ -83,7 +79,6 @@ public class SupabaseRestClient {
                     results.add(mapper.convertValue(node, Map.class));
                 }
             }
-            log.info("[Supabase] SELECT {} found {} results", table, results.size());
             return results;
         } catch (Exception e) {
             log.error("[Supabase] Parse error: {}", e.getMessage());
@@ -166,15 +161,13 @@ public class SupabaseRestClient {
 
     // Utility: build eq filter
     public static String eq(String col, Object val) {
+        if (val instanceof String) {
+            return col + "=eq." + val;
+        }
         return col + "=eq." + val;
     }
 
-    // Utility: build ilike filter (exact case-insensitive)
-    public static String ilikeExact(String col, String val) {
-        return col + "=ilike." + val;
-    }
-
-    // Utility: build ilike filter (partial match with wildcards)
+    // Utility: build ilike filter
     public static String ilike(String col, String val) {
         return col + "=ilike.*" + val + "*";
     }

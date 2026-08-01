@@ -38,7 +38,7 @@ public class UserRepositoryImpl {
     }
 
     public Optional<User> findByEmail(String email) {
-        List<Map<String, Object>> results = client.select(TABLE, "*", SupabaseRestClient.eq("email", email.trim()));
+        List<Map<String, Object>> results = client.select(TABLE, "*", SupabaseRestClient.eq("email", email));
         return results.isEmpty() ? Optional.empty()
                 : Optional.of(snakeCaseMapper.convertValue(results.get(0), User.class));
     }

@@ -22,7 +22,7 @@ public class GlobalExceptionHandler {
         log.error("Unhandled RuntimeException caught by global handler: {}", ex.getMessage(), ex);
         Map<String, String> response = new HashMap<>();
         response.put("error", ex.getMessage());
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

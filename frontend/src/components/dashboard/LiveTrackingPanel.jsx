@@ -189,7 +189,6 @@ export default function LiveTrackingPanel({ tripId }) {
   const [memberLocations, setMemberLocations] = useState({}) // username -> locationDetails
   const [wsConnected, setWsConnected] = useState(false)
   const [showRoster, setShowRoster] = useState(true)
-  const [mapError, setMapError] = useState(null)
 
   // Google Maps Refs
   const mapContainerRef = useRef(null)
@@ -327,25 +326,12 @@ export default function LiveTrackingPanel({ tripId }) {
 
     setSubmittingInvite(true)
     try {
-      const res = await apiClient.post('/trips/invite', { inviteeUsername: inviteUsername.trim() })
-      if (res.data && res.data.error) {
-        throw new Error(res.data.error)
-      }
-      
-      // Handle different response statuses
-      const status = res.data?.status
-      if (status === 'EMAIL_SENT') {
-        addToast(`Invitation email sent to ${inviteUsername}! They'll sign up and join your trip.`, 'success')
-      } else if (status === 'IN_APP') {
-        addToast(`Invitation sent to ${inviteUsername}! They'll see it in their requests.`, 'success')
-      } else {
-        addToast(`Invitation sent to ${inviteUsername}!`, 'success')
-      }
-      
+      await apiClient.post('/trips/invite', { inviteeUsername: inviteUsername.trim() })
+      addToast(`Invitation sent to ${inviteUsername}!`, 'success')
       setInviteUsername('')
       fetchInvitations()
     } catch (err) {
-      const errMsg = err.message || err.response?.data?.error || `Failed to invite ${inviteUsername}`
+      const errMsg = err.response?.data?.error || `Failed to invite ${inviteUsername}`
       addToast(errMsg, 'error')
     } finally {
       setSubmittingInvite(false)
@@ -490,15 +476,13 @@ export default function LiveTrackingPanel({ tripId }) {
       if (!existingScript) {
         const script = document.createElement('script')
         script.id = 'google-maps-script'
-        const apiKey = localStorage.getItem('google_maps_api_key') || 'AIzaSyDhYQ6CF0IECov4xy4KuVaGf0asW7O1XwM'
+        // Using a public key or fetching from local storage as fallback (assuming API key is handled by the app)
+        const apiKey = localStorage.getItem('google_maps_api_key') || ''
         script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`
         script.async = true
         script.defer = true
         script.onload = () => {
           initMap()
-        }
-        script.onerror = () => {
-          setMapError('Failed to load Google Maps. Please check your API key.')
         }
         document.head.appendChild(script)
       } else {
@@ -769,32 +753,8 @@ export default function LiveTrackingPanel({ tripId }) {
       {activeSubTab === 'map' && (
         <div className="relative rounded-2xl overflow-hidden border border-white/10 shadow-2xl h-[460px] bg-slate-950/40 backdrop-blur-md">
           
-          {/* Google Map Mount Node or Error */}
-          {mapError ? (
-            <div className="w-full h-full flex flex-col items-center justify-center gap-4 p-6 text-center">
-              <div className="w-16 h-16 rounded-full bg-rose-500/20 flex items-center justify-center">
-                <MapPin className="w-8 h-8 text-rose-400" />
-              </div>
-              <div>
-                <h3 className="text-sm font-bold text-white mb-2">Map Unavailable</h3>
-                <p className="text-xs text-white/50 max-w-xs">{mapError}</p>
-              </div>
-              <button
-                onClick={() => {
-                  setMapError(null)
-                  // Retry loading
-                  const script = document.getElementById('google-maps-script')
-                  if (script) script.remove()
-                  window.location.reload()
-                }}
-                className="px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold cursor-pointer"
-              >
-                Retry
-              </button>
-            </div>
-          ) : (
-            <div ref={mapContainerRef} className="w-full h-full" />
-          )}
+          {/* Google Map Mount Node */}
+          <div ref={mapContainerRef} className="w-full h-full" />
 
           {/* Floating Roster Toggle Control */}
           <button
