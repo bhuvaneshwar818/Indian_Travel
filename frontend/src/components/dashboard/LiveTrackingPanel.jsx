@@ -326,12 +326,15 @@ export default function LiveTrackingPanel({ tripId }) {
 
     setSubmittingInvite(true)
     try {
-      await apiClient.post('/trips/invite', { inviteeUsername: inviteUsername.trim() })
+      const res = await apiClient.post('/trips/invite', { inviteeUsername: inviteUsername.trim() })
+      if (res.data && res.data.error) {
+        throw new Error(res.data.error)
+      }
       addToast(`Invitation sent to ${inviteUsername}!`, 'success')
       setInviteUsername('')
       fetchInvitations()
     } catch (err) {
-      const errMsg = err.response?.data?.error || `Failed to invite ${inviteUsername}`
+      const errMsg = err.message || err.response?.data?.error || `Failed to invite ${inviteUsername}`
       addToast(errMsg, 'error')
     } finally {
       setSubmittingInvite(false)

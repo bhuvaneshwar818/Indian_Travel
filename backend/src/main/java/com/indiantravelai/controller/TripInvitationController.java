@@ -47,18 +47,18 @@ public class TripInvitationController {
 
         // 1. Check if inviting self
         if (inviteeInput.equalsIgnoreCase(principal.getName())) {
-            return ResponseEntity.badRequest().body(Map.of("error", "You cannot invite yourself!"));
+            return ResponseEntity.ok().body(Map.of("error", "You cannot invite yourself!"));
         }
 
         Optional<User> currentUserOpt = userRepository.findByUsername(principal.getName());
         String currentEmail = currentUserOpt.map(User::getEmail).orElse("");
         if (inviteeInput.equalsIgnoreCase(currentEmail)) {
-            return ResponseEntity.badRequest().body(Map.of("error", "You cannot invite yourself!"));
+            return ResponseEntity.ok().body(Map.of("error", "You cannot invite yourself!"));
         }
 
         // Ensure input is an email address
         if (!inviteeInput.contains("@") || !inviteeInput.contains(".")) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Please provide a valid email address to send an invitation."));
+            return ResponseEntity.ok().body(Map.of("error", "Please provide a valid email address to send an invitation."));
         }
 
         Trip activeTrip = tripService.getOrCreateActiveTrip(principal.getName());
@@ -70,7 +70,7 @@ public class TripInvitationController {
                 .anyMatch(i -> i.getInviteeUsername().equalsIgnoreCase(targetIdentifier) && !i.getStatus().equals("REJECTED"));
 
         if (alreadyInvited) {
-            return ResponseEntity.badRequest().body(Map.of("error", "This email is already invited or a member of this trip."));
+            return ResponseEntity.ok().body(Map.of("error", "This email is already invited or a member of this trip."));
         }
 
         TripInvitation invitation = new TripInvitation(
