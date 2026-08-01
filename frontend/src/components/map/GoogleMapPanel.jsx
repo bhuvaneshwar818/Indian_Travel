@@ -238,6 +238,7 @@ export default function GoogleMapPanel({
   const [inputKey, setInputKey] = useState('');
 
   const [googleMapsLoaded, setGoogleMapsLoaded] = useState(false);
+  const [mapLoadError, setMapLoadError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeLayer, setActiveLayer] = useState('street'); // street or satellite
   const [isSearching, setIsSearching] = useState(false);
@@ -291,11 +292,13 @@ export default function GoogleMapPanel({
   useEffect(() => {
     if (!apiKey) {
       setGoogleMapsLoaded(false);
+      setMapLoadError('Google Maps API key not configured. Please set it in Settings.');
       return;
     }
 
     if (window.google && window.google.maps && window.google.maps.Map) {
       setGoogleMapsLoaded(true);
+      setMapLoadError(null);
       return;
     }
 
@@ -307,6 +310,7 @@ export default function GoogleMapPanel({
       script.remove();
       script = null;
       setGoogleMapsLoaded(false);
+      setMapLoadError(null);
       if (mapInstanceRef.current) mapInstanceRef.current = null;
     }
 
@@ -321,18 +325,23 @@ export default function GoogleMapPanel({
         const checkMap = () => {
           if (window.google && window.google.maps && window.google.maps.Map) {
             setGoogleMapsLoaded(true);
+            setMapLoadError(null);
           } else {
             setTimeout(checkMap, 50);
           }
         };
         checkMap();
       };
-      script.onerror = () => console.error("Failed to load Google Maps script");
+      script.onerror = () => {
+        console.error("Failed to load Google Maps script");
+        setMapLoadError('Failed to load Google Maps. Please check your API key.');
+      };
       document.head.appendChild(script);
     } else {
       const checkMap = () => {
         if (window.google && window.google.maps && window.google.maps.Map) {
           setGoogleMapsLoaded(true);
+          setMapLoadError(null);
         } else {
           setTimeout(checkMap, 50);
         }
@@ -2087,8 +2096,31 @@ export default function GoogleMapPanel({
         id="google-map-container"
         className="w-full h-[350px] md:h-[calc(100vh-240px)] md:min-h-[550px] rounded-xl overflow-hidden border border-slate-200 dark:border-white/10 shadow-inner bg-slate-100/60 dark:bg-slate-900/60 relative z-10 flex items-center justify-center"
       >
-        {/* Map Canvas Div - Google Maps will replace contents of this div only */}
-        {apiKey && (
+        {/* Map Canvas Div or Error */}
+        {mapLoadError ? (
+          <div className="flex flex-col items-center justify-center gap-4 p-6 text-center">
+            <div className="w-16 h-16 rounded-full bg-rose-500/20 flex items-center justify-center">
+              <MapPin className="w-8 h-8 text-rose-400" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-slate-800 dark:text-white mb-2">Map Unavailable</h3>
+              <p className="text-xs text-slate-500 dark:text-white/50 max-w-xs">{mapLoadError}</p>
+            </div>
+            <button
+              onClick={() => {
+                setMapLoadError(null);
+                setApiKey('');
+                setTimeout(() => {
+                  const savedKey = localStorage.getItem('gmaps_api_key') || '';
+                  setApiKey(savedKey);
+                }, 100);
+              }}
+              className="px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold cursor-pointer"
+            >
+              Retry
+            </button>
+          </div>
+        ) : apiKey && (
           <div ref={mapRef} className="w-full h-full absolute inset-0 z-0" />
         )}
 
