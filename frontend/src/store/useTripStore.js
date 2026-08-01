@@ -93,7 +93,7 @@ export const useTripStore = create((set, get) => ({
     set({ loading: true, error: null });
     try {
       const response = await apiClient.get(`/transport/timings?from=${from}&to=${to}`);
-      set({ transportData: response.data, loading: false });
+      set({ transportData: Array.isArray(response.data) ? response.data : [], loading: false });
       return response.data;
     } catch (err) {
       set({ error: err.response?.data?.error || 'Failed to fetch transport timings.', loading: false });
@@ -104,7 +104,7 @@ export const useTripStore = create((set, get) => ({
     set({ loading: true, error: null });
     try {
       const response = await apiClient.get('/expenses');
-      set({ expenses: response.data, loading: false });
+      set({ expenses: Array.isArray(response.data) ? response.data : [], loading: false });
     } catch (err) {
       set({ error: err.response?.data?.error || 'Failed to fetch expenses.', loading: false });
     }

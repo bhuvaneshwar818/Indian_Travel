@@ -22,7 +22,7 @@ export const useTripStore = create((set, get) => ({
       }
       
       const response = await apiClient.get(url);
-      set({ destinations: response.data, loading: false });
+      set({ destinations: Array.isArray(response.data) ? response.data : [], loading: false });
     } catch (err) {
       set({ error: 'Failed to fetch destinations.', loading: false });
     }
@@ -32,7 +32,7 @@ export const useTripStore = create((set, get) => ({
     set({ loading: true, error: null });
     try {
       const response = await apiClient.get('/users/bookmarks');
-      set({ bookmarks: response.data, loading: false });
+      set({ bookmarks: Array.isArray(response.data) ? response.data : [], loading: false });
     } catch (err) {
       set({ error: 'Failed to load bookmarks.', loading: false });
     }
@@ -64,7 +64,7 @@ export const useTripStore = create((set, get) => ({
     set({ loading: true, error: null });
     try {
       const response = await apiClient.get('/trips');
-      set({ trips: response.data, loading: false });
+      set({ trips: Array.isArray(response.data) ? response.data : [], loading: false });
     } catch (err) {
       set({ error: 'Failed to load saved trips.', loading: false });
     }

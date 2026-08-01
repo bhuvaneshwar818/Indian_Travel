@@ -25,7 +25,11 @@ export default function Reviews() {
     setLoading(true)
     try {
       const response = await apiClient.get('/reviews')
-      setReviewsList(response.data)
+      if (Array.isArray(response.data)) {
+        setReviewsList(response.data)
+      } else {
+        setReviewsList([])
+      }
     } catch (err) {
       console.error("Failed to load reviews", err)
     } finally {

@@ -10,7 +10,7 @@ export const useWishlistStore = create((set, get) => ({
     set({ loading: true, error: null });
     try {
       const response = await apiClient.get('/wishlist');
-      set({ wishlist: response.data, loading: false });
+      set({ wishlist: Array.isArray(response.data) ? response.data : [], loading: false });
     } catch (err) {
       set({ error: err.response?.data?.error || 'Failed to fetch wishlist.', loading: false });
     }
