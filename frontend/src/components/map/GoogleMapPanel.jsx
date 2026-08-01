@@ -2184,7 +2184,7 @@ export default function GoogleMapPanel({
                       : 'text-white/60 hover:text-white hover:bg-white/5'
                   }`}
                 >
-                  <span>🗺️</span>
+                  {/* <span>🗺️</span> */}
                   <span className="hidden sm:inline">Street</span>
                 </button>
                 <button
@@ -2196,7 +2196,7 @@ export default function GoogleMapPanel({
                       : 'text-white/60 hover:text-white hover:bg-white/5'
                   }`}
                 >
-                  <span>🛰️</span>
+                  {/* <span>🛰️</span> */}
                   <span className="hidden sm:inline">Satellite</span>
                 </button>
                 <button
@@ -2208,7 +2208,7 @@ export default function GoogleMapPanel({
                       : 'text-white/60 hover:text-white hover:bg-white/5'
                   }`}
                 >
-                  <span>⛰️</span>
+                  {/* <span>⛰️</span> */}
                   <span className="hidden sm:inline">Terrain</span>
                 </button>
                 <div className="w-px h-4 bg-white/10" />
@@ -2218,8 +2218,8 @@ export default function GoogleMapPanel({
                   title="Reset API Key"
                   className="px-2 py-1.5 rounded-lg text-white/50 hover:text-white hover:bg-white/5 transition-all cursor-pointer text-[9px] font-black uppercase flex items-center gap-1"
                 >
-                  <span>⚙️</span>
-                  <span className="hidden sm:inline">Reset Key</span>
+                  {/* <span>⚙️</span> */}
+                  <span className="hidden sm:inline">Reset Map</span>
                 </button>
               </div>
             )}
