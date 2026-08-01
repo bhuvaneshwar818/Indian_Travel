@@ -53,27 +53,29 @@ export default function Login() {
           <div className="max-w-md w-full mx-auto pt-10 lg:pt-0">
             
             {/* Logo home link */}
-            <div className="flex justify-start mb-6">
+            <div className="flex justify-start mb-6 pl-2">
               <Link to="/" className="flex items-center gap-2 group">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-primary to-primary-light flex items-center justify-center shadow-md shadow-primary/20">
+                <div className="w-11 h-11 rounded-2xl bg-primary flex items-center justify-center shadow-md shadow-primary/20">
                   <Compass className="w-5 h-5 text-white" />
                 </div>
-                <span className="font-display font-extrabold text-xl tracking-tight bg-gradient-to-r from-primary to-primary-light bg-clip-text text-transparent dark:from-purple-300 dark:to-white">
-                  Indian Travel <span className="text-primary dark:text-purple-400">AI</span>
+                <span className="font-display font-black text-2xl tracking-tight text-primary">
+                  Indian Travel AI
                 </span>
               </Link>
             </div>
 
             {/* Card Form */}
-            <div className="clay-card p-6 sm:p-8 bg-white/80 dark:bg-slate-900/60 shadow-xl border border-slate-200/50 dark:border-slate-800/40">
-              <h2 className="text-2xl font-display font-extrabold text-slate-950 dark:text-white mb-2">Welcome Back</h2>
-              <p className="text-xs text-slate-400 mb-6 font-semibold">Enter your credentials to unlock your AI itineraries.</p>
+            <div className="clay-card p-6 sm:p-8 bg-white/80 dark:bg-slate-900/60 shadow-xl border border-slate-200/50 dark:border-slate-800/40 rounded-3xl">
+              <h2 className="text-3xl font-display font-extrabold text-slate-950 dark:text-white mb-8">Welcome Back</h2>
 
               <form onSubmit={handleLoginSubmit} className="space-y-5">
                 
                 {/* Username */}
                 <div>
-                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Username or Email</label>
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider">USERNAME OR EMAIL</label>
+                    <Link to="/forgot-username" className="text-xs font-bold text-primary hover:underline">Forgot username?</Link>
+                  </div>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                       <Mail className="w-4 h-4" />
@@ -91,7 +93,7 @@ export default function Login() {
                 {/* Password */}
                 <div>
                   <div className="flex justify-between items-center mb-2">
-                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider">Password</label>
+                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider">PASSWORD</label>
                     <Link to="/forgot-password" className="text-xs font-bold text-primary hover:underline">Forgot password?</Link>
                   </div>
                   
@@ -116,18 +118,17 @@ export default function Login() {
                   </div>
                 </div>
 
-                {/* Remember Me / Forgot username */}
-                <div className="flex justify-between items-center text-xs">
+                {/* Remember Me */}
+                <div className="flex justify-start items-center text-xs">
                   <label className="flex items-center gap-2 font-semibold text-slate-600 dark:text-slate-350 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={rememberMe}
                       onChange={(e) => setRememberMe(e.target.checked)}
-                      className="w-4 h-4 rounded text-primary focus:ring-primary cursor-pointer accent-primary"
+                      className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary cursor-pointer accent-primary"
                     />
                     <span>Remember me</span>
                   </label>
-                  <Link to="/forgot-username" className="font-bold text-primary hover:underline">Forgot username?</Link>
                 </div>
 
                 {clientError && (
@@ -180,7 +181,7 @@ export default function Login() {
 
               {/* Signup anchor */}
               <p className="mt-8 text-center text-xs font-semibold text-slate-400">
-                Don't have a travel account?{' '}
+                Don't have a an account?{' '}
                 <Link to="/signup" className="font-extrabold text-primary hover:underline">Sign Up</Link>
               </p>
 
