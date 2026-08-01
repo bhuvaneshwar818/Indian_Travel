@@ -18,7 +18,7 @@ export default function Hero() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full text-center">
         
         {/* Animated Badge */}
-        <motion.div 
+        {/* <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
@@ -28,7 +28,7 @@ export default function Hero() {
           <span className="text-sm font-semibold tracking-wide text-primary-dark dark:text-purple-300">
             Next-Gen AI Travel Assistant
           </span>
-        </motion.div>
+        </motion.div> */}
 
         {/* Hero Title */}
         <motion.h1 
@@ -41,14 +41,14 @@ export default function Hero() {
         </motion.h1>
 
         {/* Hero Subtext */}
-        <motion.p 
+        {/* <motion.p 
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2 }}
           className="mt-6 text-lg sm:text-xl text-slate-600 dark:text-slate-350 max-w-3xl mx-auto font-medium"
         >
           Discover hidden gems, auto-optimize your budget, and generate rich daily itineraries customized exactly to your tastes in seconds.
-        </motion.p>
+        </motion.p> */}
 
         {/* Search Bar / CTAs */}
         <motion.div 
@@ -75,7 +75,7 @@ export default function Hero() {
         </motion.div>
 
         {/* Trust Badges */}
-        <motion.div 
+        {/* <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8, delay: 0.5 }}
@@ -89,17 +89,17 @@ export default function Hero() {
             <MapPin className="w-5 h-5 text-primary" />
             <span className="font-semibold text-sm">Over 1,000+ Local Spots Indexed</span>
           </div>
-        </motion.div>
+        </motion.div> */}
 
         {/* 3D Bobbing Floating elements */}
         {/* Compass bottom-left */}
-        <motion.div
+        {/* <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
           className="hidden lg:block absolute left-20 bottom-24 opacity-60 text-primary-light dark:opacity-30"
         >
           <Compass className="w-20 h-20" />
-        </motion.div>
+        </motion.div> */}
 
       </div>
     </section>
