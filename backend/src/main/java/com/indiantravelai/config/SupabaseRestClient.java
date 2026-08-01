@@ -71,6 +71,11 @@ public class SupabaseRestClient {
         HttpHeaders h = headers();
         HttpEntity<Void> req = new HttpEntity<>(h);
         ResponseEntity<String> resp = restTemplate.exchange(url, HttpMethod.GET, req, String.class);
+        log.info("[Supabase] SELECT response status: {}, body: {}", resp.getStatusCode(), resp.getBody());
+        if (!resp.getStatusCode().is2xxSuccessful()) {
+            log.error("[Supabase] SELECT failed with status: {} and body: {}", resp.getStatusCode(), resp.getBody());
+            return Collections.emptyList();
+        }
         try {
             JsonNode arr = mapper.readTree(resp.getBody());
             List<Map<String, Object>> results = new ArrayList<>();
@@ -79,6 +84,7 @@ public class SupabaseRestClient {
                     results.add(mapper.convertValue(node, Map.class));
                 }
             }
+            log.info("[Supabase] SELECT returned {} results", results.size());
             return results;
         } catch (Exception e) {
             log.error("[Supabase] Parse error: {}", e.getMessage());
