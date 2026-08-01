@@ -13,6 +13,7 @@ import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.*;
 
@@ -63,7 +64,11 @@ public class SupabaseRestClient {
     }
 
     public List<Map<String, Object>> select(String table, String select, String filter) {
-        String url = baseUrl() + "/" + table + "?select=" + select;
+        String baseUrl = baseUrl() + "/" + table;
+        String url = UriComponentsBuilder.fromHttpUrl(baseUrl)
+                .queryParam("select", select)
+                .build()
+                .toUriString();
         if (filter != null && !filter.isEmpty()) {
             url += "&" + filter;
         }
@@ -71,7 +76,6 @@ public class SupabaseRestClient {
         HttpHeaders h = headers();
         HttpEntity<Void> req = new HttpEntity<>(h);
         ResponseEntity<String> resp = restTemplate.exchange(url, HttpMethod.GET, req, String.class);
-        log.info("[Supabase] SELECT response status: {}, body: {}", resp.getStatusCode(), resp.getBody());
         if (!resp.getStatusCode().is2xxSuccessful()) {
             log.error("[Supabase] SELECT failed with status: {} and body: {}", resp.getStatusCode(), resp.getBody());
             return Collections.emptyList();
@@ -84,7 +88,6 @@ public class SupabaseRestClient {
                     results.add(mapper.convertValue(node, Map.class));
                 }
             }
-            log.info("[Supabase] SELECT returned {} results", results.size());
             return results;
         } catch (Exception e) {
             log.error("[Supabase] Parse error: {}", e.getMessage());
@@ -167,13 +170,17 @@ public class SupabaseRestClient {
 
     // Utility: build eq filter
     public static String eq(String col, Object val) {
-        if (val instanceof String) {
-            return col + "=eq." + val;
-        }
-        return col + "=eq." + val;
+        String encoded = java.net.URLEncoder.encode(val.toString(), java.nio.charset.StandardCharsets.UTF_8);
+        return col + "=eq." + encoded;
     }
 
-    // Utility: build ilike filter
+    // Utility: build ilike filter (exact case-insensitive)
+    public static String ilikeExact(String col, String val) {
+        String encoded = java.net.URLEncoder.encode(val, java.nio.charset.StandardCharsets.UTF_8);
+        return col + "=ilike." + encoded;
+    }
+
+    // Utility: build ilike filter (partial match with wildcards)
     public static String ilike(String col, String val) {
         return col + "=ilike.*" + val + "*";
     }

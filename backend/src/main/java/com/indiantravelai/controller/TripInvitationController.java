@@ -63,14 +63,11 @@ public class TripInvitationController {
             }
 
             // Check if invitee email exists in the database
-            String inviteeEmail = inviteeInput.toLowerCase().trim();
-            System.out.println("[INVITE] Looking up email: " + inviteeEmail);
+            String inviteeEmail = inviteeInput.trim();
             Optional<User> inviteeUser = userRepository.findByEmail(inviteeEmail);
-            System.out.println("[INVITE] User found: " + inviteeUser.isPresent());
             if (inviteeUser.isEmpty()) {
                 // Also try finding by username in case user enters username
-                Optional<User> inviteeByUsername = userRepository.findByUsername(inviteeInput.trim());
-                System.out.println("[INVITE] Found by username: " + inviteeByUsername.isPresent());
+                Optional<User> inviteeByUsername = userRepository.findByUsername(inviteeEmail);
                 if (inviteeByUsername.isEmpty()) {
                     return ResponseEntity.ok().body(Map.of("error", "No user found with this email. Please ask them to sign up first."));
                 }
