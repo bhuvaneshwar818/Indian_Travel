@@ -98,16 +98,16 @@ public class SupabaseRestClient {
         HttpHeaders h = headers();
         h.set("Prefer", "return=representation");
         HttpEntity<Map<String, Object>> req = new HttpEntity<>(data, h);
-        ResponseEntity<String> resp = restTemplate.postForEntity(url, req, String.class);
         try {
+            ResponseEntity<String> resp = restTemplate.postForEntity(url, req, String.class);
             JsonNode node = mapper.readTree(resp.getBody());
             if (node.isArray() && node.size() > 0) {
                 return mapper.convertValue(node.get(0), Map.class);
             }
             return mapper.convertValue(node, Map.class);
         } catch (Exception e) {
-            log.error("[Supabase] Insert parse error: {}", e.getMessage());
-            return data;
+            log.error("[Supabase] Insert error: {}", e.getMessage());
+            throw new RuntimeException("Database Insert Error: " + e.getMessage(), e);
         }
     }
 

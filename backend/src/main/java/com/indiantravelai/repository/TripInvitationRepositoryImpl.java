@@ -28,7 +28,7 @@ public class TripInvitationRepositoryImpl {
             .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
     public List<TripInvitation> findByInviteeUsernameAndStatus(String inviteeUsername, String status) {
-        String filter = SupabaseRestClient.eq("invitee_username", inviteeUsername) + "&status=eq." + status;
+        String filter = "invitee_username=ilike." + inviteeUsername + "&status=eq." + status;
         List<Map<String, Object>> results = client.select(TABLE, "*", filter);
         return results.stream()
                 .map(this::mapToInvitation)

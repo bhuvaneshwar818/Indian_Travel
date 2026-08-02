@@ -32,13 +32,13 @@ public class UserRepositoryImpl {
             .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
     public Optional<User> findByUsername(String username) {
-        List<Map<String, Object>> results = client.select(TABLE, "*", SupabaseRestClient.eq("username", username));
+        List<Map<String, Object>> results = client.select(TABLE, "*", "username=ilike." + username);
         return results.isEmpty() ? Optional.empty()
                 : Optional.of(snakeCaseMapper.convertValue(results.get(0), User.class));
     }
 
     public Optional<User> findByEmail(String email) {
-        List<Map<String, Object>> results = client.select(TABLE, "*", SupabaseRestClient.eq("email", email));
+        List<Map<String, Object>> results = client.select(TABLE, "*", "email=ilike." + email);
         return results.isEmpty() ? Optional.empty()
                 : Optional.of(snakeCaseMapper.convertValue(results.get(0), User.class));
     }
