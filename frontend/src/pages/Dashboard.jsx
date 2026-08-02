@@ -519,7 +519,7 @@ export default function Dashboard() {
           {activeSection === 'dashboard' && (
             <div className="space-y-8">
               {/* Full-width Map Container */}
-              <div class="w-full">
+              <div className="w-full">
                 <GoogleMapPanel 
                   wishlist={wishlist} 
                   destinations={destinations}
@@ -533,11 +533,6 @@ export default function Dashboard() {
                   userCoords={userCoords}
                   onUpdateUserCoords={setUserCoords}
                 />
-              </div>
-
-              {/* Translator panel underneath */}
-              <div className="w-full">
-                <LanguageTranslator />
               </div>
 
               {preferences?.transportMode === 'PUBLIC' && (

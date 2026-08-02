@@ -354,7 +354,7 @@ export default function GoogleMapPanel({
           disableDefaultUI: true,
           clickableIcons: true,
           mapTypeId: activeLayer === 'satellite' ? 'hybrid' : 'roadmap',
-          gestureHandling: 'cooperative',
+          gestureHandling: 'greedy',
           rotateControl: true,
           tiltControl: true,
           mapId: 'DEMO_MAP_ID',
@@ -2095,7 +2095,7 @@ export default function GoogleMapPanel({
       {/* Map Display / Key Input Workspace Wrapper */}
       <div 
         id="google-map-container"
-        className="w-full h-[350px] md:h-[calc(100vh-240px)] md:min-h-[550px] rounded-xl overflow-hidden border border-slate-200 dark:border-white/10 shadow-inner bg-slate-100/60 dark:bg-slate-900/60 relative z-10 flex items-center justify-center"
+        className="-mx-6 w-[calc(100%+3rem)] sm:mx-0 sm:w-full h-[75vh] md:h-[calc(100vh-240px)] md:min-h-[550px] rounded-xl overflow-hidden border border-slate-200 dark:border-white/10 shadow-inner bg-slate-100/60 dark:bg-slate-900/60 relative z-10 flex items-center justify-center"
       >
         {/* Map Canvas Div - Google Maps will replace contents of this div only */}
         {apiKey && (
@@ -2172,54 +2172,55 @@ export default function GoogleMapPanel({
           <>
             {googleMapsLoaded && (
               <div 
-                className="absolute top-4 right-4 z-[1000] flex gap-1 bg-slate-950/85 border border-white/10 p-1.5 rounded-xl shadow-2xl backdrop-blur-md items-center"
+                className="absolute top-4 right-4 z-[1000] flex gap-2 items-center"
                 style={{ zIndex: 1000 }}
               >
-                <button
-                  type="button"
-                  onClick={() => setActiveLayer('street')}
-                  className={`px-2 py-1.5 text-[9px] font-black uppercase rounded-lg transition-all cursor-pointer flex items-center gap-1 ${
-                    activeLayer === 'street' 
-                      ? 'bg-violet-600 text-white shadow-md' 
-                      : 'text-white/60 hover:text-white hover:bg-white/5'
-                  }`}
-                >
-                  {/* <span>🗺️</span> */}
-                  <span className="hidden sm:inline">Street</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveLayer('satellite')}
-                  className={`px-2 py-1.5 text-[9px] font-black uppercase rounded-lg transition-all cursor-pointer flex items-center gap-1 ${
-                    activeLayer === 'satellite' 
-                      ? 'bg-violet-600 text-white shadow-md' 
-                      : 'text-white/60 hover:text-white hover:bg-white/5'
-                  }`}
-                >
-                  {/* <span>🛰️</span> */}
-                  <span className="hidden sm:inline">Satellite</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveLayer('terrain')}
-                  className={`px-2 py-1.5 text-[9px] font-black uppercase rounded-lg transition-all cursor-pointer flex items-center gap-1 ${
-                    activeLayer === 'terrain' 
-                      ? 'bg-violet-600 text-white shadow-md' 
-                      : 'text-white/60 hover:text-white hover:bg-white/5'
-                  }`}
-                >
-                  {/* <span>⛰️</span> */}
-                  <span className="hidden sm:inline">Terrain</span>
-                </button>
-                <div className="w-px h-4 bg-white/10" />
+                {/* Layer Dropdown Menu */}
+                <div className="relative group">
+                  <button type="button" className="px-3 py-2 text-[10px] font-black uppercase rounded-xl bg-slate-950/85 border border-white/10 text-white shadow-2xl backdrop-blur-md flex items-center gap-1.5 transition-all hover:bg-slate-900">
+                    <span>{activeLayer}</span>
+                    <span className="text-white/50 text-[8px] transition-transform group-hover:rotate-180">▼</span>
+                  </button>
+                  
+                  <div className="absolute right-0 top-full mt-2 w-32 bg-slate-950/95 border border-white/10 rounded-xl shadow-2xl backdrop-blur-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all flex flex-col p-1.5 z-50 transform origin-top-right group-hover:scale-100 scale-95">
+                    <button
+                      type="button"
+                      onClick={() => setActiveLayer('street')}
+                      className={`px-3 py-2 text-[10px] font-bold uppercase rounded-lg text-left transition-all ${
+                        activeLayer === 'street' ? 'bg-violet-600/30 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'
+                      }`}
+                    >
+                      Street
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveLayer('satellite')}
+                      className={`px-3 py-2 text-[10px] font-bold uppercase rounded-lg text-left transition-all ${
+                        activeLayer === 'satellite' ? 'bg-violet-600/30 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'
+                      }`}
+                    >
+                      Satellite
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveLayer('terrain')}
+                      className={`px-3 py-2 text-[10px] font-bold uppercase rounded-lg text-left transition-all ${
+                        activeLayer === 'terrain' ? 'bg-violet-600/30 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'
+                      }`}
+                    >
+                      Terrain
+                    </button>
+                  </div>
+                </div>
+
+                {/* Reset Button */}
                 <button
                   type="button"
                   onClick={handleClearKey}
                   title="Reset API Key"
-                  className="px-2 py-1.5 rounded-lg text-white/50 hover:text-white hover:bg-white/5 transition-all cursor-pointer text-[9px] font-black uppercase flex items-center gap-1"
+                  className="px-3 py-2 rounded-xl bg-slate-950/85 border border-white/10 text-white/50 hover:text-white hover:bg-slate-900 transition-all cursor-pointer text-[10px] font-black uppercase flex items-center shadow-2xl backdrop-blur-md"
                 >
-                  {/* <span>⚙️</span> */}
-                  <span className="hidden sm:inline">Reset Map</span>
+                  <span className="hidden sm:inline">Reset</span>
                 </button>
               </div>
             )}
@@ -2227,7 +2228,7 @@ export default function GoogleMapPanel({
             {/* Custom Zoom, Rotate, & Locate Me Dock Overlay (Positioned vertically on the right side) */}
             {googleMapsLoaded && (
               <div 
-                className="absolute right-4 top-1/2 -translate-y-1/2 z-[1000] flex flex-col gap-1.5 bg-slate-950/85 border border-white/10 p-1.5 rounded-xl shadow-2xl backdrop-blur-md"
+                className="absolute right-4 bottom-4 z-[1000] flex flex-col gap-1.5 bg-slate-950/85 border border-white/10 p-1.5 rounded-xl shadow-2xl backdrop-blur-md"
                 style={{ zIndex: 1000 }}
               >
                 {/* Zoom In */}
