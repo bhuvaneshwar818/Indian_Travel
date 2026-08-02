@@ -67,6 +67,9 @@ public class TripInvitationRepositoryImpl {
         if (data.containsKey("created_at") && data.get("created_at") != null) {
             data.put("created_at", data.get("created_at").toString());
         }
+        
+        // Remove role since it doesn't exist in the database table schema
+        data.remove("role");
 
         if (invite.getId() == null) {
             data.remove("id");
