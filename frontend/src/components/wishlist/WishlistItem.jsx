@@ -60,7 +60,7 @@ export default function WishlistItem({
           {item.placeName}
         </h4>
         <p className="text-[9px] text-slate-500 dark:text-white/40 uppercase tracking-wide truncate">
-          {item.state} • {item.category}
+          {item.state} 
         </p>
         {info && (
           <p className="text-[10px] font-black text-sky-655 dark:text-sky-400 mt-0.5 flex items-center gap-1 select-none">

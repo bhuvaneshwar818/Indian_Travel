@@ -295,12 +295,12 @@ export default function WishlistPanel({
       {/* Title Header */}
       <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/5 pb-3 mb-4 flex-shrink-0">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-rose-500/10 text-rose-400 flex items-center justify-center border border-rose-500/20">
+          {/* <div className="w-8 h-8 rounded-lg bg-rose-500/10 text-rose-400 flex items-center justify-center border border-rose-500/20">
             <Heart className="w-4 h-4 fill-rose-500" />
-          </div>
+          </div> */}
           <div>
-            <h3 className="text-xs font-bold text-slate-800 dark:text-white uppercase tracking-wider">Your Wishlist stops</h3>
-            <p className="text-[9px] text-slate-500 dark:text-white/50">Sequence and order of trip highlights</p>
+            <h3 className="text-xs font-bold text-slate-800 dark:text-white uppercase tracking-wider">Your Wishlist</h3>
+            {/* <p className="text-[9px] text-slate-500 dark:text-white/50">Sequence and order of trip highlights</p> */}
           </div>
         </div>
         <span className="px-2.5 py-0.5 rounded bg-slate-200 dark:bg-white/5 border border-slate-300 dark:border-white/5 text-[10px] font-black text-slate-700 dark:text-white">
@@ -428,9 +428,9 @@ export default function WishlistPanel({
       {/* Reorder instructions & Routing CTAs */}
       {wishlist.length > 0 && (
         <div className="pt-3 border-t border-slate-200 dark:border-white/5 space-y-3">
-          <p className="text-[9px] text-slate-500 dark:text-white/30 text-center italic">
+          {/* <p className="text-[9px] text-slate-500 dark:text-white/30 text-center italic">
             💡 Tip: Drag and drop stops to change their rank and plan your route.
-          </p>
+          </p> */}
 
           <div className="flex items-center gap-2 px-1 py-0.5">
             <input
