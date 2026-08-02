@@ -2024,7 +2024,7 @@ export default function GoogleMapPanel({
   ];
 
   return (
-    <GlassCard className="p-4 bg-white/[0.04] space-y-4 border-white/[0.08] relative">
+    <GlassCard className="p-4 bg-white/[0.04] space-y-4 border-white/[0.08] relative -mx-6 w-[calc(100%+3rem)] sm:mx-0 sm:w-full rounded-none sm:rounded-2xl">
       {/* Top Map Controls */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
         <div className="flex items-center gap-2 text-white">
@@ -2046,60 +2046,63 @@ export default function GoogleMapPanel({
           </div>
         )}
 
-        {/* Search Bar (Visible only when map loaded) */}
-        {apiKey && (
-          <form 
-            ref={searchContainerRef}
-            onSubmit={handleSearchSubmit} 
-            className="relative w-full sm:max-w-xs z-50"
-          >
-            <input
-              type="text"
-              placeholder="Search city / landmark..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onFocus={() => setShowDropdown(true)}
-              disabled={!googleMapsLoaded || isSearching}
-              className="w-full glass-input pl-10 pr-10 py-1.5 text-xs placeholder-white/30 text-white"
-            />
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
-            {isSearching && (
-              <RefreshCw className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-violet-400 animate-spin" />
-            )}
-
-            {/* Autocomplete Predictions Dropdown */}
-            {showDropdown && combinedSuggestions.length > 0 && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-slate-950/95 border border-white/10 rounded-lg shadow-2xl max-h-60 overflow-y-auto z-[999] text-left text-xs divide-y divide-white/5 backdrop-blur-md">
-                {combinedSuggestions.map((s) => (
-                  <button
-                    key={s.place_id}
-                    type="button"
-                    onClick={() => handleSelectPrediction(s)}
-                    className="w-full px-3 py-2 text-white/80 hover:bg-violet-950/45 text-left font-medium transition-all focus:outline-none"
-                  >
-                    <p className="font-semibold text-white flex items-center justify-between gap-1.5">
-                      <span>{s.mainText}</span>
-                      {s.isLocal && (
-                        <span className="text-[7.5px] px-1 py-0.2 rounded bg-violet-500/20 text-violet-300 font-black uppercase tracking-wider scale-90">Sight</span>
-                      )}
-                    </p>
-                    <p className="text-[10px] text-white/40 truncate">{s.secondaryText}</p>
-                  </button>
-                ))}
-              </div>
-            )}
-          </form>
-        )}
       </div>
 
       {/* Map Display / Key Input Workspace Wrapper */}
       <div 
         id="google-map-container"
-        className="-mx-6 w-[calc(100%+3rem)] sm:mx-0 sm:w-full h-[75vh] md:h-[calc(100vh-240px)] md:min-h-[550px] rounded-xl overflow-hidden border border-slate-200 dark:border-white/10 shadow-inner bg-slate-100/60 dark:bg-slate-900/60 relative z-10 flex items-center justify-center"
+        className="w-full h-[75vh] md:h-[calc(100vh-240px)] md:min-h-[550px] rounded-none sm:rounded-xl overflow-hidden border border-slate-200 dark:border-white/10 shadow-inner bg-slate-100/60 dark:bg-slate-900/60 relative z-10 flex items-center justify-center"
       >
         {/* Map Canvas Div - Google Maps will replace contents of this div only */}
         {apiKey && (
           <div ref={mapRef} className="w-full h-full absolute inset-0 z-0" />
+        )}
+
+        {/* Search Bar Overlay */}
+        {apiKey && (
+          <div className="absolute top-4 left-4 z-[1000] w-[180px] xs:w-[220px] sm:w-[280px]">
+            <form 
+              ref={searchContainerRef}
+              onSubmit={handleSearchSubmit} 
+              className="relative w-full shadow-2xl"
+            >
+              <input
+                type="text"
+                placeholder="Search city..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={() => setShowDropdown(true)}
+                disabled={!googleMapsLoaded || isSearching}
+                className="w-full glass-input bg-slate-950/85 backdrop-blur-md pl-9 pr-8 py-2 sm:py-2.5 text-[10px] sm:text-xs placeholder-white/50 text-white rounded-xl border border-white/20 shadow-2xl"
+              />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 sm:w-4 sm:h-4 text-white/50" />
+              {isSearching && (
+                <RefreshCw className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-violet-400 animate-spin" />
+              )}
+
+              {/* Autocomplete Predictions Dropdown */}
+              {showDropdown && combinedSuggestions.length > 0 && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-slate-950/95 border border-white/10 rounded-xl shadow-2xl max-h-60 overflow-y-auto z-[999] text-left text-xs divide-y divide-white/5 backdrop-blur-md p-1.5">
+                  {combinedSuggestions.map((s) => (
+                    <button
+                      key={s.place_id}
+                      type="button"
+                      onClick={() => handleSelectPrediction(s)}
+                      className="w-full px-3 py-2.5 rounded-lg text-white/80 hover:bg-violet-950/45 text-left font-medium transition-all focus:outline-none flex flex-col gap-0.5"
+                    >
+                      <p className="font-semibold text-white flex items-center justify-between gap-1.5">
+                        <span>{s.mainText}</span>
+                        {s.isLocal && (
+                          <span className="text-[7.5px] px-1 py-0.2 rounded bg-violet-500/20 text-violet-300 font-black uppercase tracking-wider">Sight</span>
+                        )}
+                      </p>
+                      <p className="text-[10px] text-white/40 truncate">{s.secondaryText}</p>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </form>
+          </div>
         )}
 
         {/* Floating segment hover tooltip */}
@@ -2177,7 +2180,7 @@ export default function GoogleMapPanel({
               >
                 {/* Layer Dropdown Menu */}
                 <div className="relative group">
-                  <button type="button" className="px-3 py-2 text-[10px] font-black uppercase rounded-xl bg-slate-950/85 border border-white/10 text-white shadow-2xl backdrop-blur-md flex items-center gap-1.5 transition-all hover:bg-slate-900">
+                  <button type="button" className="px-2.5 sm:px-3 py-2 text-[9px] sm:text-[10px] font-black uppercase rounded-xl bg-slate-950/85 border border-white/10 text-white shadow-2xl backdrop-blur-md flex items-center gap-1.5 transition-all hover:bg-slate-900">
                     <span>{activeLayer}</span>
                     <span className="text-white/50 text-[8px] transition-transform group-hover:rotate-180">▼</span>
                   </button>
@@ -2218,8 +2221,9 @@ export default function GoogleMapPanel({
                   type="button"
                   onClick={handleClearKey}
                   title="Reset API Key"
-                  className="px-3 py-2 rounded-xl bg-slate-950/85 border border-white/10 text-white/50 hover:text-white hover:bg-slate-900 transition-all cursor-pointer text-[10px] font-black uppercase flex items-center shadow-2xl backdrop-blur-md"
+                  className="px-2.5 sm:px-3 py-2 rounded-xl bg-slate-950/85 border border-white/10 text-white/50 hover:text-white hover:bg-slate-900 transition-all cursor-pointer text-[10px] font-black uppercase flex items-center gap-1.5 shadow-2xl backdrop-blur-md"
                 >
+                  <RefreshCw className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                   <span className="hidden sm:inline">Reset</span>
                 </button>
               </div>

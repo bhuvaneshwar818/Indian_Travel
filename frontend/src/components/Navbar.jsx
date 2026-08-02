@@ -87,7 +87,7 @@ export default function Navbar() {
           </Link>
 
           {/* Desktop Nav Links */}
-          <div className="hidden md:flex items-center gap-6">
+          <div className="hidden lg:flex items-center gap-6">
             {navLinks.map((link) => (
               <button
                 key={link.name}
@@ -104,7 +104,7 @@ export default function Navbar() {
           </div>
 
           {/* Right Action buttons */}
-          <div className="hidden md:flex items-center gap-4">
+          <div className="hidden lg:flex items-center gap-4">
             
             {/* Theme Toggle */}
             <button
@@ -151,7 +151,7 @@ export default function Navbar() {
           </div>
 
           {/* Mobile hamburger button */}
-          <div className="md:hidden flex items-center gap-3">
+          <div className="lg:hidden flex items-center gap-3">
             {/* Theme Toggle Mobile */}
             <button
               onClick={toggleTheme}
@@ -173,7 +173,7 @@ export default function Navbar() {
 
       {/* Mobile Drawer */}
       {isOpen && (
-        <div className="md:hidden glass-navbar absolute top-full left-0 w-full px-4 py-6 shadow-xl border-t border-slate-250/20 dark:border-slate-800/40 animate-fadeIn">
+        <div className="lg:hidden glass-navbar absolute top-full left-0 w-full px-4 py-6 shadow-xl border-t border-slate-250/20 dark:border-slate-800/40 animate-fadeIn">
           <div className="flex flex-col gap-4">
             {navLinks.map((link) => (
               <button

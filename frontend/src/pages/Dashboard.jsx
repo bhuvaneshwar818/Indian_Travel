@@ -310,7 +310,7 @@ export default function Dashboard() {
         <div className="flex items-center gap-3 shrink-0">
           <button 
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-1.5 rounded-lg bg-white/5 border border-white/10 text-white/80 hover:text-white md:hidden"
+            className="p-1.5 rounded-lg bg-white/5 border border-white/10 text-white/80 hover:text-white xl:hidden"
           >
             <Menu className="w-4 h-4" />
           </button>
@@ -325,7 +325,7 @@ export default function Dashboard() {
           </Link>
 
           {/* Desktop header Navigation Menu placed beside the logo */}
-          <nav className="hidden lg:flex items-center gap-1.5 ml-4 pl-4 border-l border-white/10">
+          <nav className="hidden xl:flex items-center gap-1.5 ml-4 pl-4 border-l border-white/10">
             {[
               { id: 'dashboard', label: 'Home', icon: <Home className="w-3.5 h-3.5" /> },
               { id: 'map', label: 'Interactive Map', icon: <Map className="w-3.5 h-3.5" /> },
@@ -464,7 +464,7 @@ export default function Dashboard() {
         {sidebarOpen && (
           <div 
             onClick={() => setSidebarOpen(false)}
-            className="fixed inset-0 top-[72px] z-20 bg-black/40 backdrop-blur-sm md:hidden"
+            className="fixed inset-0 top-[72px] z-20 bg-black/40 backdrop-blur-sm xl:hidden"
           />
         )}
         {rightPanelOpen && (
@@ -476,7 +476,7 @@ export default function Dashboard() {
 
         {/* Mobile Dropdown Navigation Menu Overlay */}
         {sidebarOpen && (
-          <div className="md:hidden fixed top-[72px] left-0 w-full z-30 bg-slate-950/95 backdrop-blur-xl border-b border-white/10 p-4 shadow-2xl animate-dashboard-fade">
+          <div className="xl:hidden fixed top-[72px] left-0 w-full z-30 bg-slate-950/95 backdrop-blur-xl border-b border-white/10 p-4 shadow-2xl animate-dashboard-fade">
             <div className="flex flex-col gap-3">
               {[
                 { id: 'dashboard', label: 'Home', icon: <Home className="w-4 h-4" /> },
