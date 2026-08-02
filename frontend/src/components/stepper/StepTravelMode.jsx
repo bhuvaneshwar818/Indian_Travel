@@ -6,7 +6,7 @@ export default function StepTravelMode({ travelMode, setTravelMode, groupSize, s
   return (
     <div className="space-y-6 text-left">
       <h3 className="text-lg font-bold text-white text-center sm:text-left">Choose Your Travel Mode</h3>
-      <p className="text-xs text-white/60 text-center sm:text-left">Are you exploring India solo, or planning a group getaway?</p>
+      {/* <p className="text-xs text-white/60 text-center sm:text-left">Are you exploring India solo, or planning a group getaway?</p> */}
       
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* Solo Option */}
@@ -24,10 +24,10 @@ export default function StepTravelMode({ travelMode, setTravelMode, groupSize, s
           <div className="w-12 h-12 rounded-full bg-violet-500/10 flex items-center justify-center mx-auto mb-4 text-violet-400">
             <User className="w-6 h-6" />
           </div>
-          <h4 className="font-bold text-sm text-white">🧍 Solo Backpacker</h4>
-          <p className="text-[11px] text-white/55 mt-2 leading-relaxed">
+          <h4 className="font-bold text-sm text-white">Solo</h4>
+          {/* <p className="text-[11px] text-white/55 mt-2 leading-relaxed">
             Independent routing, hostels, budget travels, and personal translations.
-          </p>
+          </p> */}
         </div>
 
         {/* Group Option */}
@@ -45,10 +45,10 @@ export default function StepTravelMode({ travelMode, setTravelMode, groupSize, s
           <div className="w-12 h-12 rounded-full bg-violet-500/10 flex items-center justify-center mx-auto mb-4 text-violet-400">
             <Users className="w-6 h-6" />
           </div>
-          <h4 className="font-bold text-sm text-white">👥 Group Getaway</h4>
-          <p className="text-[11px] text-white/55 mt-2 leading-relaxed">
+          <h4 className="font-bold text-sm text-white">Group</h4>
+          {/* <p className="text-[11px] text-white/55 mt-2 leading-relaxed">
             Coordinated chat rooms, expenses split equally, and multi-person scheduling.
-          </p>
+          </p> */}
         </div>
       </div>
 
@@ -62,8 +62,12 @@ export default function StepTravelMode({ travelMode, setTravelMode, groupSize, s
             min="2"
             max="100"
             value={groupSize}
-            onChange={(e) => setGroupSize(Math.max(2, parseInt(e.target.value) || 2))}
-            className="w-full glass-input text-center text-sm font-bold text-violet-400"
+            onChange={(e) => setGroupSize(e.target.value)}
+            onBlur={(e) => {
+              const val = parseInt(e.target.value);
+              if (isNaN(val) || val < 2) setGroupSize(2);
+            }}
+            className="w-full glass-input text-center text-sm font-bold text-violet-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
           />
         </div>
       )}

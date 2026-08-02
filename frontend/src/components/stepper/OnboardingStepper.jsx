@@ -71,10 +71,10 @@ export default function OnboardingStepper({ onComplete }) {
           {/* Stepper Header */}
           <div className="text-center relative z-10 space-y-2">
             <h2 className="text-xl md:text-2xl font-display font-black tracking-tight text-white flex items-center justify-center gap-2">
-              <Sparkles className="w-5 h-5 text-violet-400 animate-pulse" />
-              <span>Configure Your India Itinerary</span>
+              {/* <Sparkles className="w-5 h-5 text-violet-400 animate-pulse" /> */}
+              <span>Plan Your Trip</span>
             </h2>
-            <p className="text-xs text-white/50">Personalize your journey planner in just a few quick choices</p>
+            {/* <p className="text-xs text-white/50">Personalize your journey planner in just a few quick choices</p> */}
           </div>
 
           {/* Progress Tracker */}

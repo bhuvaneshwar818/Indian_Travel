@@ -212,13 +212,13 @@ export default function Signup() {
   let strengthColor = 'bg-slate-200'
   if (password.length > 0) {
     if (metCount <= 2) {
-      strengthLabel = 'Weak 🛑'
+      strengthLabel = 'Weak'
       strengthColor = 'bg-red-500'
     } else if (metCount <= 4) {
-      strengthLabel = 'Medium ⚠️'
+      strengthLabel = 'Medium'
       strengthColor = 'bg-amber-400'
     } else {
-      strengthLabel = 'Strong 💪'
+      strengthLabel = 'Strong'
       strengthColor = 'bg-green-500'
     }
   }
@@ -613,7 +613,7 @@ export default function Signup() {
                           <div className="flex gap-2">
                             <div className="relative flex-grow">
                               <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                                <KeySquare className="w-4.5 h-4.5" />
+                                {/* <KeySquare className="w-4.5 h-4.5" /> */}
                               </div>
                               <input
                                 type="text"

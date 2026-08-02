@@ -60,7 +60,7 @@ export default function StepStartLocation({ startLocation, setStartLocation }) {
           <p className="text-[10px] text-red-400 font-semibold">{error}</p>
         )}
 
-        <div className="space-y-2">
+        {/* <div className="space-y-2">
           <label className="block text-[10px] font-bold text-white/50 uppercase tracking-wider">
             Popular Travel Hubs:
           </label>
@@ -83,7 +83,7 @@ export default function StepStartLocation({ startLocation, setStartLocation }) {
               </button>
             ))}
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   )
