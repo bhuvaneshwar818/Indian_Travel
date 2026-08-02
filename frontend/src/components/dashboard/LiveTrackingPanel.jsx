@@ -423,8 +423,8 @@ export default function LiveTrackingPanel({ tripId }) {
 
       // 3. Send initial presence announcement (online status, no coordinates by default)
       client.send(`/app/location/${tripId}`, {
-        username: user.username,
-        fullName: user.fullName || user.username,
+        username: user?.username,
+        fullName: user?.fullName || user?.username,
         lat: null,
         lng: null,
         isActive: true
@@ -532,7 +532,7 @@ export default function LiveTrackingPanel({ tripId }) {
     if (myCoords && typeof myCoords.lat === 'number' && typeof myCoords.lng === 'number' && user?.username) {
       activeTrackingData[user.username] = {
         username: user.username,
-        fullName: user.fullName || user.username,
+        fullName: user?.fullName || user.username,
         lat: myCoords.lat,
         lng: myCoords.lng,
         isActive: true
@@ -629,8 +629,8 @@ export default function LiveTrackingPanel({ tripId }) {
 
         if (stompClientRef.current && wsConnected) {
           stompClientRef.current.send(`/app/location/${tripId}`, {
-            username: user.username,
-            fullName: user.fullName || user.username,
+            username: user?.username,
+            fullName: user?.fullName || user?.username,
             lat: coords.lat,
             lng: coords.lng,
             isActive: true
@@ -655,8 +655,8 @@ export default function LiveTrackingPanel({ tripId }) {
         // Publish coordinates to WebSocket gateway
         if (stompClientRef.current && wsConnected) {
           stompClientRef.current.send(`/app/location/${tripId}`, {
-            username: user.username,
-            fullName: user.fullName || user.username,
+            username: user?.username,
+            fullName: user?.fullName || user?.username,
             lat: coords.lat,
             lng: coords.lng,
             isActive: true
@@ -710,12 +710,12 @@ export default function LiveTrackingPanel({ tripId }) {
     }
   }, [])
 
-  const onlineCount = teamMembers.filter(member => {
+  const onlineCount = (teamMembers || []).filter(member => {
     const isSelf = member.username?.toLowerCase() === user?.username?.toLowerCase()
     return !!memberLocations[member.username] || (isSelf && !!myCoords)
   }).length
 
-  const onMapCount = teamMembers.filter(member => {
+  const onMapCount = (teamMembers || []).filter(member => {
     const isSelf = member.username?.toLowerCase() === user?.username?.toLowerCase()
     if (isSelf) return !!myCoords
     const loc = memberLocations[member.username]
@@ -807,7 +807,7 @@ export default function LiveTrackingPanel({ tripId }) {
 
               {/* Buddies list with status */}
               <div className="space-y-2 overflow-y-auto pr-1">
-                {teamMembers.map((member) => {
+                {(teamMembers || []).map((member) => {
                   const isSelf = member.username?.toLowerCase() === user?.username?.toLowerCase()
                   const isOnline = !!memberLocations[member.username] || (isSelf && !!myCoords)
 
@@ -923,17 +923,17 @@ export default function LiveTrackingPanel({ tripId }) {
                   <div className="w-8 h-8 rounded-full border-2 border-violet-400 border-t-transparent animate-spin" />
                   <p className="text-[10px] font-bold text-white/40">Loading buddies...</p>
                 </div>
-              ) : teamMembers.length === 0 ? (
+              ) : (teamMembers || []).length === 0 ? (
                 <div className="text-center py-20 text-xs text-white/40">
                   No travel buddies joined.
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {(() => {
-                    const myRole = teamMembers.find(m => m.username?.toLowerCase() === user?.username?.toLowerCase())?.role || 'MEMBER';
-                    const ownerCount = teamMembers.filter(m => m.role === 'OWNER' || m.role === 'CO_OWNER').length;
+                    const myRole = (teamMembers || []).find(m => m.username?.toLowerCase() === user?.username?.toLowerCase())?.role || 'MEMBER';
+                    const ownerCount = (teamMembers || []).filter(m => m.role === 'OWNER' || m.role === 'CO_OWNER').length;
 
-                    return teamMembers.map((member) => {
+                    return (teamMembers || []).map((member) => {
                       const isSelf = member.username?.toLowerCase() === user?.username?.toLowerCase()
                       const isOnline = !!memberLocations[member.username] || (isSelf && !!myCoords)
 
