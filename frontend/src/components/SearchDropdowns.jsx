@@ -9,7 +9,6 @@ import India from '@svg-maps/india'
 import { indianTravelData } from '../lib/indianTravelData'
 
 const STATES = [
-  "all",
   "Andhra Pradesh",
   "Arunachal Pradesh",
   "Assam",
@@ -238,44 +237,26 @@ const mapTypeToCategoryId = (type) => {
 };
 
 const getDynamicDestinations = (selectedState, category = 'all') => {
+  if (!selectedState || selectedState === 'all' || selectedState === "") return [];
+  
   let list = [];
-  if (selectedState === 'all') {
-    indianTravelData.forEach(stObj => {
-      stObj.places.forEach((p, idx) => {
-        list.push({
-          id: `explorer-${stObj.state.replace(/\s+/g, '-')}-${idx}`,
-          name: p.name,
-          city: p.name.split(' ')[0].replace(/[()]/g, ''),
-          state: stObj.state,
-          category: mapTypeToCategoryId(p.type),
-          description: p.info,
-          imageUrl: p.image,
-          rating: 4.8,
-          foodSpots: "Traditional local dishes",
-          weatherInfo: "Pleasant seasonal climate",
-          famousPlaces: p.name
-        });
+  const stObj = indianTravelData.find(st => st.state.toLowerCase() === selectedState.toLowerCase());
+  if (stObj) {
+    stObj.places.forEach((p, idx) => {
+      list.push({
+        id: `explorer-${selectedState.replace(/\s+/g, '-')}-${idx}`,
+        name: p.name,
+        city: p.name.split(' ')[0].replace(/[()]/g, ''),
+        state: selectedState,
+        category: mapTypeToCategoryId(p.type),
+        description: p.info,
+        imageUrl: p.image,
+        rating: 4.8,
+        foodSpots: "Traditional local dishes",
+        weatherInfo: "Pleasant seasonal climate",
+        famousPlaces: p.name
       });
     });
-  } else {
-    const stObj = indianTravelData.find(st => st.state.toLowerCase() === selectedState.toLowerCase());
-    if (stObj) {
-      stObj.places.forEach((p, idx) => {
-        list.push({
-          id: `explorer-${selectedState.replace(/\s+/g, '-')}-${idx}`,
-          name: p.name,
-          city: p.name.split(' ')[0].replace(/[()]/g, ''),
-          state: selectedState,
-          category: mapTypeToCategoryId(p.type),
-          description: p.info,
-          imageUrl: p.image,
-          rating: 4.8,
-          foodSpots: "Traditional local dishes",
-          weatherInfo: "Pleasant seasonal climate",
-          famousPlaces: p.name
-        });
-      });
-    }
   }
 
   // Filter by category
@@ -574,7 +555,7 @@ export default function SearchDropdowns() {
   const { isAuthenticated } = useAuthStore()
   const { addToast } = useToastStore()
 
-  const [state, setState] = useState("all")
+  const [state, setState] = useState("")
   const [category, setCategory] = useState("all")
   const [hoveredState, setHoveredState] = useState(null)
   const [suggestions, setSuggestions] = useState([])
@@ -703,7 +684,7 @@ export default function SearchDropdowns() {
     category: "New Region",
     weather: "Varies by seasonal conditions",
     image: "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=400",
-    desc: `We are currently mapping out popular destinations, culinary spots, and heritage sights in ${state}. Click a glowing travel hub like Rajasthan, Goa, or Kerala to explore active spots!`
+    desc: `Select a state from the dropdown or map to explore destinations.`
   };
 
   const displayedDestinations = getDynamicDestinations(state, category);
@@ -721,13 +702,10 @@ export default function SearchDropdowns() {
           <h2 className="text-3xl sm:text-5xl font-display font-extrabold text-slate-900 dark:text-white">
             Search by <span className="bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">Interactive Explorer</span>
           </h2>
-          {/* <p className="mt-4 text-slate-600 dark:text-slate-350 font-medium">
-            Select parameters from the dropdown, or click directly on the interactive India map to explore famous attractions and matched destinations.
-          </p> */}
         </div>
 
         {/* COMBINED SPLIT HALF-SCREEN PANEL */}
-        <div className="flex flex-col lg:flex-row gap-8 items-start">
+        <div className="flex flex-col lg:flex-row gap-8 items-stretch">
           
           {/* Left Column: Dropdown Form + SVG Map */}
           <div ref={leftColRef} className="w-full lg:w-[42%] flex-shrink-0 flex flex-col gap-6 text-left">
@@ -745,8 +723,9 @@ export default function SearchDropdowns() {
                     onChange={(e) => setState(e.target.value)}
                     className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary dark:border-slate-850 dark:bg-slate-950 dark:text-slate-100 cursor-pointer"
                   >
+                    <option value="" disabled>Select a State...</option>
                     {STATES.map((s) => (
-                      <option key={s} value={s}>{s === 'all' ? 'All States' : s}</option>
+                      <option key={s} value={s}>{s}</option>
                     ))}
                   </select>
                 </div>
@@ -766,30 +745,12 @@ export default function SearchDropdowns() {
                 </div>
 
               </div>
-
-              {/* AI Suggestion Chips
-              <div className="mt-5 pt-4 border-t border-slate-200/50 dark:border-slate-800/40 text-left flex flex-col gap-2">
-                <div className="flex items-center gap-1 text-[11px] font-extrabold text-primary uppercase tracking-wider">
-                  <Sparkles className="w-3.5 h-3.5 text-primary animate-pulse-glow" />
-                  <span>AI Suggestions:</span>
-                </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {suggestions.map((sug) => (
-                    <span 
-                      key={sug} 
-                      className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-indigo-50 border border-indigo-100 text-indigo-755 dark:bg-indigo-950/20 dark:border-indigo-900/30 dark:text-indigo-300"
-                    >
-                      {sug}
-                    </span>
-                  ))}
-                </div>
-              </div> */}
             </div>
 
-            {/* Map wrapper — restored to original aspect-square */}
+            {/* Map wrapper — stretched to match height on large screens */}
             <div
               onMouseMove={handleMouseMove}
-              className="clay-card p-4 md:p-6 bg-white/70 dark:bg-slate-900/60 border border-slate-200/50 dark:border-slate-800/40 shadow-inner flex items-center justify-center w-full relative aspect-square rounded-2xl"
+              className="clay-card p-4 md:p-6 bg-white/70 dark:bg-slate-900/60 border border-slate-200/50 dark:border-slate-800/40 shadow-inner flex items-center justify-center w-full relative flex-1 aspect-square lg:aspect-auto rounded-2xl"
             >
               
               {/* Native sharp scalable Vector Map of India */}
@@ -853,7 +814,7 @@ export default function SearchDropdowns() {
           </div>
 
           {/* Right Column: Matched Sights */}
-          <div className="flex-1 flex flex-col gap-4 text-left h-auto lg:h-[700px]">
+          <div className="flex-1 min-w-0 flex flex-col gap-4 text-left h-auto lg:h-[700px]">
             
             {/* Sights Header Panel */}
             <div className="flex-shrink-0 flex justify-between items-center bg-white/40 dark:bg-slate-900/20 p-4 rounded-2xl border border-slate-200/30 dark:border-slate-800/20 shadow-sm flex-wrap gap-4">
@@ -864,19 +825,29 @@ export default function SearchDropdowns() {
                 {/* <p className="text-xs text-slate-400 font-semibold mt-1">Instant database queries filtered by your selections.</p> */}
               </div>
               
-              {state !== "all" && (
+              {state !== "" && (
                 <button 
-                  onClick={() => { setState("all"); setCategory("all"); }}
-                  className="px-4 py-2 bg-slate-200 hover:bg-slate-350 text-slate-750 font-bold text-xs rounded-xl transition-all dark:bg-slate-850 dark:hover:bg-slate-800 dark:text-slate-200"
+                  onClick={() => { setState(""); setCategory("all"); }}
+                  className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold text-xs rounded-xl transition-all dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-200 cursor-pointer shadow-sm hover:shadow-md"
                 >
                   Clear Selection
                 </button>
               )}
             </div>
 
-            {/* Scrollable list — fills all remaining height in the right panel */}
-            <div className="flex-1 min-h-0 overflow-y-auto pr-2 custom-scrollbar">
-              <div className="flex flex-col gap-5 pb-2">
+            {/* Scrollable list wrapper with Gradient Overlays */}
+            <div className="relative flex-1 min-h-0">
+              {/* Top Gradient Overlay */}
+              <div className="absolute top-0 left-0 right-0 h-4 bg-gradient-to-b from-slate-50 to-transparent dark:from-[#0A0516] z-10 pointer-events-none"></div>
+              
+              {/* Bottom Gradient Overlay */}
+              <div className="absolute bottom-0 left-0 right-0 h-5 bg-gradient-to-t from-slate-50 to-transparent dark:from-[#0A0516] z-10 pointer-events-none"></div>
+
+              <div 
+                className="h-full overflow-y-auto pr-2 scrollbar-none pt-4 pb-6"
+                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+              >
+                <div className="flex flex-col gap-5">
               {loading ? (
                 <div className="flex flex-col items-center justify-center py-20 gap-3">
                   <div className="w-12 h-12 rounded-full border-4 border-primary border-t-transparent animate-spin"></div>
@@ -992,6 +963,7 @@ export default function SearchDropdowns() {
               )}
               </div>{/* end inner flex-col gap-5 */}
             </div>{/* end scrollable overflow-y-auto */}
+            </div>{/* end relative wrapper for scroll gradients */}
 
           </div>{/* end right column */}
 

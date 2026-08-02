@@ -167,13 +167,29 @@ export default function Reviews() {
                   </div>
                 </div>
 
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="clay-btn-primary w-full py-3 text-xs"
-                >
-                  {submitting ? 'Submitting...' : 'Submit Review'}
-                </button>
+                <div className="flex gap-4 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowForm(false);
+                      setName('');
+                      setLocation('');
+                      setRating(5);
+                      setComment('');
+                    }}
+                    disabled={submitting}
+                    className="w-full py-3 text-xs rounded-xl font-bold border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition-all dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-200 shadow-sm cursor-pointer active:scale-95"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="clay-btn-primary w-full py-3 text-xs"
+                  >
+                    {submitting ? 'Submitting...' : 'Submit Review'}
+                  </button>
+                </div>
               </form>
             </motion.div>
           )}

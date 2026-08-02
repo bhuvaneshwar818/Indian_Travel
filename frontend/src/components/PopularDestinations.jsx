@@ -108,12 +108,19 @@ export default function PopularDestinations() {
           </div>
         </div>
 
-        {/* Horizontal Scroll Box */}
-        <div 
-          ref={scrollRef}
-          className="flex gap-8 overflow-x-auto pb-10 scrollbar-none snap-x snap-mandatory touch-pan-x"
-          style={{ scrollbarWidth: 'none' }}
-        >
+        {/* Horizontal Scroll Box Wrapper with Gradient Overlays */}
+        <div className="relative -mx-4 px-4 sm:mx-0 sm:px-0">
+          {/* Left Gradient Overlay */}
+          <div className="absolute top-0 left-0 bottom-10 w-6 sm:w-12 lg:w-16 bg-gradient-to-r from-white to-transparent dark:from-[#06020E] z-10 pointer-events-none rounded-l-2xl"></div>
+          
+          {/* Right Gradient Overlay */}
+          <div className="absolute top-0 right-0 bottom-10 w-6 sm:w-12 lg:w-16 bg-gradient-to-l from-white to-transparent dark:from-[#06020E] z-10 pointer-events-none rounded-r-2xl"></div>
+          
+          <div 
+            ref={scrollRef}
+            className="flex gap-8 overflow-x-auto pb-10 scrollbar-none snap-x snap-mandatory touch-pan-x relative"
+            style={{ scrollbarWidth: 'none' }}
+          >
           {POPULAR_LIST.map((item) => (
             <div 
               key={item.id}
@@ -176,6 +183,7 @@ export default function PopularDestinations() {
               </div>
             </div>
           ))}
+          </div>
         </div>
 
       </div>

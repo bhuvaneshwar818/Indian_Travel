@@ -751,7 +751,7 @@ export default function LiveTrackingPanel({ tripId }) {
 
       {/* MAP VIEW CONTAINER - Only rendered when Map tab is active */}
       {activeSubTab === 'map' && (
-        <div className="relative rounded-2xl overflow-hidden border border-white/10 shadow-2xl h-[460px] bg-slate-950/40 backdrop-blur-md">
+        <div className="relative rounded-2xl md:rounded-3xl overflow-hidden border border-white/10 shadow-2xl h-[75vh] md:h-[600px] bg-slate-950/40 backdrop-blur-md -mx-4 md:mx-0 w-[calc(100%+2rem)] md:w-full">
           
           {/* Google Map Mount Node */}
           <div ref={mapContainerRef} className="w-full h-full" />
