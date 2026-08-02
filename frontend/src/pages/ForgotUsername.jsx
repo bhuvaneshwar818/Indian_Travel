@@ -66,9 +66,7 @@ export default function ForgotUsername() {
             {/* Logo home Link */}
             <div className="flex justify-start mb-6">
               <Link to="/" className="flex items-center gap-2 group">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-primary to-primary-light flex items-center justify-center shadow-md shadow-primary/20">
-                  <Compass className="w-5 h-5 text-white" />
-                </div>
+                <img src="/assets/images/logo.png" alt="Logo" className="w-12 h-12 object-contain transform group-hover:scale-110 transition-transform duration-300" />
                 <span className="font-display font-extrabold text-xl tracking-tight bg-gradient-to-r from-primary to-primary-light bg-clip-text text-transparent dark:from-purple-300 dark:to-white">
                   Indian Travel <span className="text-primary dark:text-purple-400">AI</span>
                 </span>
@@ -88,7 +86,7 @@ export default function ForgotUsername() {
                     transition={{ duration: 0.3 }}
                   >
                     <h2 className="text-2xl font-display font-extrabold text-slate-950 dark:text-white mb-2">Recover Username</h2>
-                    <p className="text-xs text-slate-400 mb-6 font-semibold">Enter registered email to discover your username.</p>
+                    {/* <p className="text-xs text-slate-400 mb-6 font-semibold">Enter registered email to discover your username.</p> */}
 
                     <form onSubmit={handleForgotUsernameSubmit} className="space-y-5">
                       <div>

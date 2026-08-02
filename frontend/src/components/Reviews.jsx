@@ -222,13 +222,13 @@ export default function Reviews() {
 
                 {/* User Info footer */}
                 <div className="flex items-center gap-3 pt-4 border-t border-slate-200/50 dark:border-slate-800/40">
-                  <div className="w-10 h-10 rounded-full overflow-hidden bg-slate-100 flex items-center justify-center text-slate-400 shadow-inner">
+                  {/* <div className="w-10 h-10 rounded-full overflow-hidden bg-slate-100 flex items-center justify-center text-slate-400 shadow-inner">
                     {rev.userAvatar ? (
                       <img src={rev.userAvatar} alt={rev.userName} className="w-full h-full object-cover" />
                     ) : (
                       <User className="w-5 h-5 text-slate-400" />
                     )}
-                  </div>
+                  </div> */}
                   <div>
                     <h4 className="text-sm font-extrabold text-slate-900 dark:text-white leading-none">{rev.userName}</h4>
                     <p className="text-[10px] font-bold text-slate-400 flex items-center gap-0.5 mt-1">

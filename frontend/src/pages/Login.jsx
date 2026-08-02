@@ -159,21 +159,7 @@ export default function Login() {
                   )}
                 </button>
 
-                {/* Google OAuth visual */}
-                <button
-                  type="button"
-                  onClick={async () => {
-                    try {
-                      await signInWithGoogle();
-                    } catch (err) {
-                      console.error("Google SSO error:", err);
-                    }
-                  }}
-                  className="w-full py-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-bold text-slate-700 flex items-center justify-center gap-2 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300 dark:hover:bg-slate-900"
-                >
-                  <Chrome className="w-4.5 h-4.5 text-primary" />
-                  <span>Login with Google</span>
-                </button>
+
 
               </form>
 

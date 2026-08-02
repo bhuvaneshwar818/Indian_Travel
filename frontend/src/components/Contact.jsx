@@ -54,11 +54,11 @@ export default function Contact() {
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
           <h2 className="text-3xl sm:text-5xl font-display font-extrabold text-slate-900 dark:text-white">
-            Connect <span className="bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">With Our Team</span>
+            Contact <span className="bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">With Us</span>
           </h2>
-          <p className="mt-4 text-slate-600 dark:text-slate-350 font-medium">
+          {/* <p className="mt-4 text-slate-600 dark:text-slate-350 font-medium">
             Have questions regarding itineraries or local transport? Drop us a query. Our AI guides and support team are available 24/7.
-          </p>
+          </p> */}
         </div>
 
         <div className="max-w-4xl mx-auto text-left items-stretch">

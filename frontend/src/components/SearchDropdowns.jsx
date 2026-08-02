@@ -951,7 +951,7 @@ export default function SearchDropdowns() {
                 </div>
               ) : displayedDestinations.length === 0 ? (
                 <div className="clay-card clay-card-hover p-12 text-center bg-white/70 max-w-lg mx-auto w-full dark:bg-slate-900/60">
-                  <Compass className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
+                  {/* <Compass className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-4" /> */}
                   <h3 className="text-lg font-bold text-slate-800 dark:text-white">No locations found</h3>
                   <p className="mt-1 text-sm text-slate-550">Try selecting another state, another category, or clear filters.</p>
                 </div>

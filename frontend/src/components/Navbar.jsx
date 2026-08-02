@@ -36,7 +36,7 @@ export default function Navbar() {
     { name: 'Home', path: '/' },
     { name: 'Destinations', path: '/#destinations' },
     { name: 'Explore', path: '/#explore' },
-    { name: 'services', path: '/#ai-planner' },
+    { name: 'Features', path: '/#ai-planner' },
     { name: 'Reviews', path: '/#reviews' },
     { name: 'Contact', path: '/#contact' },
   ]
@@ -50,7 +50,13 @@ export default function Navbar() {
 
   const handleScrollToSection = (hash) => {
     setIsOpen(false)
-    if (hash.startsWith('/#')) {
+    if (hash === '/') {
+      if (location.pathname !== '/') {
+        navigate('/')
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      }
+    } else if (hash.startsWith('/#')) {
       const elementId = hash.substring(2)
       if (location.pathname !== '/') {
         navigate('/')
@@ -77,7 +83,15 @@ export default function Navbar() {
         <div className="flex justify-between items-center h-12">
           
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 group">
+          <Link 
+            to="/" 
+            className="flex items-center gap-2 group"
+            onClick={() => {
+              if (location.pathname === '/') {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }
+            }}
+          >
             <img src="/assets/images/logo.png" alt="Logo" className="w-12 h-12 object-contain transform group-hover:scale-110 transition-transform duration-300" />
             <span className="font-display font-extrabold text-xl tracking-tight bg-gradient-to-r from-primary to-primary-light bg-clip-text text-transparent dark:from-purple-300 dark:to-white">
               Indian Travel <span className="text-primary dark:text-purple-400">AI</span>

@@ -3,8 +3,8 @@ import { Sparkles, Compass, Wallet, CloudSun, Target, ShieldCheck, Languages } f
 
 const FEATURE_LIST = [
   {
-    title: "AI Travel Architect",
-    desc: "Generate hyper-detailed, day-by-day travel plans built around your specific pacing, duration, and thematic desires.",
+    title: "AI Trip Planner",
+    desc: "Create detailed daily travel plans tailored to your time, themes, destinations, and unique experiences.",
     icon: <Sparkles className="w-6 h-6 text-purple-500" />,
     bg: "bg-purple-100 dark:bg-purple-950/20"
   },
@@ -15,26 +15,26 @@ const FEATURE_LIST = [
     bg: "bg-emerald-100 dark:bg-emerald-950/20"
   },
   {
-    title: "Budget Optimizer",
-    desc: "Select a financial tier (Budget, Moderate, Luxury) and watch our AI compute costs, suggesting exact local hotels.",
+    title: "Budget Tracker",
+    desc: "Manage your trip expenses with real-time spending insights, helping you plan smarter and avoid overspending.",
     icon: <Wallet className="w-6 h-6 text-amber-500" />,
     bg: "bg-amber-100 dark:bg-amber-950/20"
   },
   {
-    title: "Real-time Weather Engine",
-    desc: "Receive immediate climatic snapshots and temperature ranges for selected states to optimize packing lists.",
+    title: "Real-time Weather",
+    desc: "Stay informed with real-time weather forecasts, temperature, and rainfall updates for your destination and route.",
     icon: <CloudSun className="w-6 h-6 text-sky-500" />,
     bg: "bg-sky-100 dark:bg-sky-950/20"
   },
   {
-    title: "Smart Heuristics",
-    desc: "Access localized expert advice, scooter rental values, and travel tips tailored for solo hikers or groups.",
+    title: "Live Tracking",
+    desc: "View every group member's live location in real time, ensuring everyone stays connected, safe, and easy to locate throughout the journey.",
     icon: <Target className="w-6 h-6 text-red-500" />,
     bg: "bg-red-100 dark:bg-red-950/20"
   },
   {
-    title: "Multi-Language Maps",
-    desc: "Supports translation structures across major regional Indian languages for local taxi instructions.",
+    title: "Language Translation",
+    desc: "Break language barriers with real-time translation, enabling travelers to communicate effortlessly with locals across different regions.",
     icon: <Languages className="w-6 h-6 text-indigo-500" />,
     bg: "bg-indigo-100 dark:bg-indigo-950/20"
   }
@@ -52,11 +52,11 @@ export default function Features() {
         {/* Title */}
         <div className="max-w-3xl mx-auto mb-16">
           <h2 className="text-3xl sm:text-5xl font-display font-extrabold text-slate-900 dark:text-white">
-            Personalized <span className="bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">AI Assistant Features</span>
+            Our <span className="bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">Features</span>
           </h2>
-          <p className="mt-4 text-slate-605 dark:text-slate-350 font-medium">
+          {/* <p className="mt-4 text-slate-605 dark:text-slate-350 font-medium">
             Discover a comprehensive suite of travel features engineered to streamline exploration in Incredible India.
-          </p>
+          </p> */}
         </div>
 
         {/* Feature Grid */}
