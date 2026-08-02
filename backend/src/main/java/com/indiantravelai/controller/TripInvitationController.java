@@ -69,7 +69,6 @@ public class TripInvitationController {
         }
 
         Trip activeTrip = tripService.getOrCreateActiveTrip(principal.getName());
-        String targetIdentifier = inviteeInput;
 
         // 3. Check if an invite already exists
         List<TripInvitation> existing = invitationRepository.findByTripId(activeTrip.getId());
