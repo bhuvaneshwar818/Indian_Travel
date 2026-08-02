@@ -253,3 +253,12 @@
 }
 
 
+
+@keyframes custom-marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-100%); }
+}
+.auto-scroll-container:hover .scroll-target {
+  animation: custom-marquee 8s linear infinite;
+}
+

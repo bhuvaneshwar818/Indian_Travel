@@ -1,12 +1,108 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useTripStore } from '../store/tripStore'
 import { useWishlistStore } from '../store/useWishlistStore'
 import { useAuthStore } from '../store/authStore'
 import { useToastStore } from '../store/useToastStore'
-import { Search, MapPin, Sparkles, Star, Plus, Check, Compass, Info, CloudSun, Utensils, HelpCircle } from 'lucide-react'
+import { Search, MapPin, Sparkles, Star, Plus, Check, Compass, Info, CloudSun, Utensils, HelpCircle, ChevronDown, ChevronUp } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import India from '@svg-maps/india'
 import { indianTravelData } from '../lib/indianTravelData'
+
+const AutoScrollText = ({ text }) => {
+  const containerRef = useRef(null)
+  const textRef = useRef(null)
+  const [overflowAmount, setOverflowAmount] = useState(0)
+  const [isHovered, setIsHovered] = useState(false)
+
+  useEffect(() => {
+    const checkOverflow = () => {
+      if (containerRef.current && textRef.current) {
+        const overflow = textRef.current.scrollWidth - containerRef.current.clientWidth
+        setOverflowAmount(overflow > 0 ? overflow : 0)
+      }
+    }
+    checkOverflow()
+    const timer = setTimeout(checkOverflow, 100)
+    window.addEventListener('resize', checkOverflow)
+    return () => {
+      clearTimeout(timer)
+      window.removeEventListener('resize', checkOverflow)
+    }
+  }, [text])
+
+  const isOverflowing = overflowAmount > 0
+
+  return (
+    <div 
+      ref={containerRef} 
+      className="flex-1 min-w-0 overflow-hidden whitespace-nowrap relative cursor-default"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <div 
+        ref={textRef} 
+        className="inline-block transition-transform ease-in-out"
+        style={{ 
+          transform: isOverflowing && isHovered ? `translateX(-${overflowAmount}px)` : 'translateX(0)',
+          transitionDuration: isOverflowing && isHovered ? `${Math.max(1.5, overflowAmount / 30)}s` : '1s'
+        }}
+      >
+        <span>{text}</span>
+      </div>
+      {isOverflowing && (
+        <div 
+          className={`absolute top-0 right-0 bottom-0 w-8 bg-gradient-to-l from-white dark:from-slate-900 to-transparent pointer-events-none transition-opacity duration-300 ${isHovered ? 'opacity-0' : 'opacity-100'}`}
+        ></div>
+      )}
+    </div>
+  )
+}
+
+const ExpandableDescription = ({ text }) => {
+  const textRef = useRef(null)
+  const [canExpand, setCanExpand] = useState(false)
+  const [isExpanded, setIsExpanded] = useState(false)
+
+  useEffect(() => {
+    const checkOverflow = () => {
+      if (textRef.current) {
+        const wasExpanded = textRef.current.style.webkitLineClamp === 'unset';
+        textRef.current.style.webkitLineClamp = '3';
+        const isO = textRef.current.scrollHeight > textRef.current.clientHeight;
+        setCanExpand(isO);
+        if (wasExpanded) textRef.current.style.webkitLineClamp = 'unset';
+      }
+    }
+    checkOverflow();
+    setTimeout(checkOverflow, 100);
+    window.addEventListener('resize', checkOverflow)
+    return () => window.removeEventListener('resize', checkOverflow)
+  }, [text])
+
+  return (
+    <div className="relative">
+      <p 
+        ref={textRef} 
+        className={`text-base text-slate-600 dark:text-slate-350 leading-relaxed font-medium ${isExpanded ? '' : 'line-clamp-3'}`}
+        style={isExpanded ? { WebkitLineClamp: 'unset' } : {}}
+      >
+        {text}
+      </p>
+      {canExpand && (
+        <button 
+          onClick={() => setIsExpanded(!isExpanded)} 
+          className="mt-2 flex items-center gap-1 text-xs font-extrabold text-primary hover:text-primary-dark transition-colors"
+        >
+          {isExpanded ? (
+            <>Read Less <ChevronUp className="w-4 h-4" /></>
+          ) : (
+            <>Read More <ChevronDown className="w-4 h-4" /></>
+          )}
+        </button>
+      )}
+    </div>
+  )
+}
 
 const STATES = [
   "Andhra Pradesh",
@@ -894,15 +990,15 @@ export default function SearchDropdowns() {
                     </div>
 
                     {/* Right side: Info Details */}
-                    <div className="p-6 md:p-7 flex-grow text-left flex flex-col justify-between gap-3">
+                    <div className="p-6 md:p-7 flex-1 min-w-0 text-left flex flex-col justify-between gap-3">
                       <div className="flex flex-col gap-2">
                         <div className="flex justify-between items-start gap-3">
                           <div className="flex-1 min-w-0">
-                            <h3 className="text-2xl font-display font-extrabold text-slate-950 dark:text-white flex items-center gap-2 leading-tight">
+                            <h3 className="text-2xl font-display font-extrabold text-slate-950 dark:text-white flex items-center gap-2 leading-tight min-w-0">
                               <MapPin className="w-5 h-5 text-primary flex-shrink-0" />
-                              <span className="truncate">{dest.name}</span>
+                              <AutoScrollText text={dest.name} />
                             </h3>
-                            <p className="mt-1.5 text-sm font-bold text-slate-400 tracking-widest uppercase">{dest.city}, {dest.state}</p>
+                            <p className="mt-1.5 text-sm font-bold text-slate-400 tracking-widest uppercase break-words whitespace-normal">{dest.city}, {dest.state}</p>
                           </div>
                           
                           {/* Plus / Check wishlist button */}
@@ -921,40 +1017,10 @@ export default function SearchDropdowns() {
                           </button>
                         </div>
 
-                        <p className="text-base text-slate-600 dark:text-slate-350 leading-relaxed font-medium line-clamp-3">{dest.description}</p>
+                        <ExpandableDescription text={dest.description} />
                       </div>
 
-                      {/* Bottom Actions Drawer */}
-                      <div className="mt-2">
-                        {activeInfoId === dest.id && (
-                          <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
-                            exit={{ opacity: 0, height: 0 }}
-                            className="mb-4 p-4 rounded-2xl bg-slate-100/60 border border-slate-200/60 dark:bg-slate-950/50 dark:border-slate-800/50 text-sm space-y-2.5"
-                          >
-                            <div className="flex items-start gap-2">
-                              <Utensils className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
-                              <p className="text-slate-700 dark:text-slate-300"><strong>Food:</strong> {dest.foodSpots}</p>
-                            </div>
-                            <div className="flex items-start gap-2">
-                              <CloudSun className="w-4 h-4 text-sky-500 mt-0.5 flex-shrink-0" />
-                              <p className="text-slate-700 dark:text-slate-300"><strong>Weather:</strong> {dest.weatherInfo}</p>
-                            </div>
-                            <div className="pt-1 text-xs text-slate-500 dark:text-slate-400">
-                              <strong>Top Spots:</strong> {dest.famousPlaces}
-                            </div>
-                          </motion.div>
-                        )}
 
-                        <button
-                          onClick={() => setActiveInfoId(activeInfoId === dest.id ? null : dest.id)}
-                          className="w-full py-3 rounded-xl border border-slate-200 bg-white hover:bg-primary/5 hover:border-primary/40 text-sm font-bold text-primary flex items-center justify-center gap-2 transition-all duration-200 dark:border-slate-800 dark:bg-slate-900/40 dark:hover:bg-slate-800/50"
-                        >
-                          <Info className="w-4 h-4" />
-                          <span>{activeInfoId === dest.id ? 'Hide Details' : 'View Sights & Food'}</span>
-                        </button>
-                      </div>
 
                     </div>
 

@@ -31,6 +31,7 @@ export default {
         'float': 'float 6s ease-in-out infinite',
         'pulse-glow': 'pulseGlow 2.5s ease-in-out infinite',
         'spin-slow': 'spin 15s linear infinite',
+        'marquee': 'marquee 8s linear infinite',
       },
       keyframes: {
         float: {
@@ -40,6 +41,10 @@ export default {
         pulseGlow: {
           '0%, 100%': { opacity: 0.8, filter: 'drop-shadow(0 0 4px rgba(124, 58, 237, 0.3))' },
           '50%': { opacity: 1, filter: 'drop-shadow(0 0 12px rgba(124, 58, 237, 0.7))' },
+        },
+        marquee: {
+          '0%': { transform: 'translateX(0)' },
+          '100%': { transform: 'translateX(-100%)' },
         }
       }
     },
