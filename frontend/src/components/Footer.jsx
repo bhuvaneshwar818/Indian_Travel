@@ -40,9 +40,7 @@ export default function Footer() {
           {/* Logo & Desc (4 cols) */}
           <div className="md:col-span-4 space-y-5">
             <Link to="/" className="flex items-center gap-2 group w-fit">
-              <div className="w-9 h-9 rounded-lg bg-gradient-to-tr from-primary to-primary-light flex items-center justify-center shadow-md">
-                <Compass className="w-4.5 h-4.5 text-white" />
-              </div>
+              <img src="/assets/images/logo.png" alt="Logo" className="w-10 h-10 object-contain transform group-hover:scale-110 transition-transform duration-300" />
               <span className="font-display font-extrabold text-lg tracking-tight bg-gradient-to-r from-primary to-primary-light bg-clip-text text-transparent dark:from-purple-300 dark:to-white">
                 Indian Travel <span className="text-primary dark:text-purple-400">AI</span>
               </span>
