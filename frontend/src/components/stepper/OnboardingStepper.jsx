@@ -6,9 +6,9 @@ import StepTravelMode from './StepTravelMode'
 import StepTransportMode from './StepTransportMode'
 import StepStartLocation from './StepStartLocation'
 import { useTripStore } from '../../store/useTripStore'
-import { ArrowLeft, ArrowRight, Sparkles } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Sparkles, X } from 'lucide-react'
 
-export default function OnboardingStepper({ onComplete }) {
+export default function OnboardingStepper({ onComplete, onCancel }) {
   const { savePreferences } = useTripStore();
   const [stepIndex, setStepIndex] = useState(0);
 
@@ -67,6 +67,16 @@ export default function OnboardingStepper({ onComplete }) {
           {/* Neon gradient orb */}
           <div className="absolute -top-12 -left-12 w-48 h-48 bg-violet-600/10 blur-[60px] rounded-full pointer-events-none" />
           <div className="absolute -bottom-12 -right-12 w-48 h-48 bg-indigo-600/10 blur-[60px] rounded-full pointer-events-none" />
+
+          {/* Close Button */}
+          {onCancel && (
+            <button 
+              onClick={onCancel}
+              className="absolute top-4 right-4 z-[60] p-1.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-white/60 hover:text-white transition-colors cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
 
           {/* Stepper Header */}
           <div className="text-center relative z-10 space-y-2">

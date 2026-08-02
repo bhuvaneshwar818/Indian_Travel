@@ -300,7 +300,8 @@ export default function Dashboard() {
             onComplete={() => {
               setShowStepper(false);
               fetchPreferences();
-            }} 
+            }}
+            onCancel={() => setShowStepper(false)}
           />
         )}
       </AnimatePresence>
