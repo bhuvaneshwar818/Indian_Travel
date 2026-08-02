@@ -1059,15 +1059,15 @@ export default function LiveTrackingPanel({ tripId }) {
               
               <form onSubmit={handleSendInvite} className="flex gap-2">
                 <input
-                  type="email"
+                  type="text"
                   value={inviteUsername}
                   onChange={(e) => setInviteUsername(e.target.value)}
-                  placeholder="Email address"
+                  placeholder="Email address or username"
                   className="flex-grow glass-input text-xs"
                 />
                 <button
                   type="submit"
-                  disabled={submittingInvite || !inviteUsername.trim() || !inviteUsername.includes('@')}
+                  disabled={submittingInvite || !inviteUsername.trim()}
                   className="px-3 rounded-xl bg-violet-650 hover:bg-violet-750 text-white flex items-center justify-center disabled:opacity-50 cursor-pointer"
                 >
                   {submittingInvite ? (

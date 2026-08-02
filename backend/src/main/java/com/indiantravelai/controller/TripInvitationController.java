@@ -56,9 +56,16 @@ public class TripInvitationController {
             return ResponseEntity.badRequest().body(Map.of("error", "You cannot invite yourself!"));
         }
 
-        // Ensure input is an email address
-        if (!inviteeInput.contains("@") || !inviteeInput.contains(".")) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Please provide a valid email address to send an invitation."));
+        String targetIdentifier = inviteeInput;
+        String emailToDispatch = targetIdentifier;
+
+        // If it doesn't look like an email, assume it's a username
+        if (!targetIdentifier.contains("@")) {
+            Optional<User> inviteeOpt = userRepository.findByUsername(targetIdentifier);
+            if (inviteeOpt.isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "User '" + targetIdentifier + "' not found. Please provide a valid username or email."));
+            }
+            emailToDispatch = inviteeOpt.get().getEmail();
         }
 
         Trip activeTrip = tripService.getOrCreateActiveTrip(principal.getName());
@@ -83,7 +90,9 @@ public class TripInvitationController {
         TripInvitation saved = invitationRepository.save(invitation);
 
         // 4. Send email dispatch
-        emailService.sendTripInvitationEmail(targetIdentifier, principal.getName(), activeTrip.getTitle());
+        if (emailToDispatch != null && emailToDispatch.contains("@")) {
+            emailService.sendTripInvitationEmail(emailToDispatch, principal.getName(), activeTrip.getTitle());
+        }
 
         return ResponseEntity.ok(saved);
     }
