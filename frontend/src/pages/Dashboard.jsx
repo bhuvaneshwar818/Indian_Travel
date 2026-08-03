@@ -563,10 +563,10 @@ export default function Dashboard() {
                       <select
                         value={selectedState}
                         onChange={(e) => setSelectedState(e.target.value)}
-                        className="w-full glass-input text-xs bg-slate-900"
+                        className="w-full glass-input text-xs bg-slate-900 text-white"
                       >
                         {indianStatesList.map((st) => (
-                          <option key={st} value={st}>{st}</option>
+                          <option key={st} value={st} className="bg-slate-900 text-white">{st}</option>
                         ))}
                       </select>
                     </div>
